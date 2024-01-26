@@ -3,21 +3,14 @@ package chess;
 import java.util.Collection;
 import java.util.ArrayList;
 
-/**
- * Represents a single chess piece
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessPiece {
-    private char symbol;
+    private final PieceType type;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
+        this.type = type;
     }
 
-    /**
-     * The various different chess piece options
-     */
+
     public enum PieceType {
         KING,
         QUEEN,
@@ -26,6 +19,7 @@ public class ChessPiece {
         ROOK,
         PAWN
     }
+
 
     /**
      * @return Which team this chess piece belongs to
@@ -38,22 +32,7 @@ public class ChessPiece {
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        switch (Character.toLowerCase(symbol)) {
-            case 'r':
-                return PieceType.ROOK;
-            case 'n':
-                return PieceType.KNIGHT;
-            case 'b':
-                return PieceType.BISHOP;
-            case 'q':
-                return PieceType.QUEEN;
-            case 'k':
-                return PieceType.KING;
-            case 'p':
-                return PieceType.PAWN;
-            default:
-                return null;
-        }
+        return this.type;
     }
 
     /**
@@ -78,22 +57,21 @@ public class ChessPiece {
                 }
             }
         } else if (myPiece.getPieceType() == PieceType.BISHOP) {
-            int[][] directions={{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+            ChessPosition startPosition = new ChessPosition(row, col);
+            int[][] directions = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
             for (int[] direction : directions) {
-                for (int i=1; i <= 8; i++) {
-                    int newRow=row + i * direction[0];
-                    int newCol=col + i * direction[1];
-                    moves.add(new ChessPosition(newRow, newCol));
+                for (int i = 1; i <= 8; i++) {
+                    int newRow = row + i * direction[0];
+                    int newCol = col + i * direction[1];
+                    if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
+                        ChessPosition endPosition = new ChessPosition(newRow, newCol);
+                        moves.add(new ChessMove(startPosition, endPosition, myPiece.getPieceType()));
+                    }
                 }
-
-
-
             }
 
-        }
-        return moves;
-    }
-}
+    }return moves;
+}}
 
 
 
