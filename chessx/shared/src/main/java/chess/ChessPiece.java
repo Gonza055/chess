@@ -2,14 +2,14 @@ package chess;
 
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ChessPiece {
     private final PieceType type;
     private final ChessGame.TeamColor pieceColor;
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
-        this.type = type;
-        this.pieceColor = pieceColor;
-
+        this.type=type;
+        this.pieceColor=pieceColor;
     }
 
 
@@ -27,24 +27,15 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return this.pieceColor;
+        return pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        return this.type;
+        return type;
     }
-
-
-
-    public boolean isOccupied(ChessPosition position) {
-        int row = position.getRow() - 1; // Adjust for 0-indexed array if needed
-        int col = position.getColumn() - 1; // Adjust for 0-indexed array if needed
-        return board[row][col] == null; // Returns true if there's a piece at the position
-    }
-
 
 
 
@@ -56,6 +47,11 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+
+        return switch (type) {
+            case BISHOP -> bishopPieceMoves(board, myPosition);
+        }
+
         ArrayList moves;
         moves=new ArrayList();
         ChessPiece myPiece=board.getPiece(myPosition);
