@@ -213,7 +213,37 @@ public class ChessGame implements Cloneable{
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        boolean Stalemate = true;
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition alliedPos = new ChessPosition(i, j);
+                ChessPiece alliedPiece = this.chessBoard.getPiece(alliedPos);
+
+                if (alliedPiece != null && alliedPiece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> alliedMov = alliedPiece.pieceMoves(this.chessBoard, alliedPos);
+                    for (ChessMove move : alliedMov) {
+                        ChessPosition endP = move.getEndPosition();
+                        ChessPosition startP = move.getStartPosition();
+
+                        if (this.chessBoard.getPiece(endP) == null || (this.chessBoard.getPiece(endP) != null && this.chessBoard.getPiece(endP).getTeamColor() != currentTurn)) {
+                            // Create alternate universe game to see if move will put us into check
+                            ChessGame alterG = this.clone();
+                            alterG.chessBoard.addPiece(endP, alliedPiece);
+                            alterG.chessBoard.addPiece(startP, null);
+
+                            // If all moves keep us in check, we're in checkmate
+                            if (alterG.isInCheck(teamColor)) {
+                                Stalemate = true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return Stalemate;
     }
 
     /**
@@ -243,6 +273,26 @@ public class ChessGame implements Cloneable{
             throw new InternalError(ex);
         }
     }
+
+    @Override
+    public boolean equals(Object objetito) {
+        if (this == objetito) return true;
+        if (objetito == null || getClass() != objetito.getClass()) return false;
+        ChessGame chessGame=(ChessGame) objetito;
+        return Objects.deepEquals(chessBoard, chessGame.chessBoard) && currentTurn == chessGame.currentTurn;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(chessBoard, currentTurn);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessGame{" + "chessBoard=" + chessBoard + ", currentTurn=" + currentTurn + '}';
+    }
+
+
 
 
 }
