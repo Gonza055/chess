@@ -10,7 +10,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessPiece {
+public class ChessPiece implements Cloneable{
 
     private PieceType pieceType;
     private ChessGame.TeamColor pieceColor;
@@ -97,18 +97,79 @@ public class ChessPiece {
         possiblePositions.add(new ChessPosition(currentRow - 1, currentCol -1));
         possiblePositions.add(new ChessPosition(currentRow - 1, currentCol +1));
 
-        for (ChessPosition pos: possiblePositions){
+        for (ChessPosition pos: possiblePositions) {
+            if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() < 1 || pos.getColumn() > 8) {
+                continue;
+            }
+            if (currentBoard.getPiece(pos) != null && currentBoard.getPiece(pos).pieceColor == this.pieceColor) {
+                continue;
+            }
+            else{
+                for (int i = pos.getRow() - 2; i < pos.getRow() + 2; i++) {
+                    ChessPosition checkP = new ChessPosition(i, pos.getColumn() - 2);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                    checkP = new ChessPosition(i, pos.getColumn() - 1);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                    checkP = new ChessPosition(i, pos.getColumn() + 1);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                    checkP = new ChessPosition(i, pos.getColumn() + 2);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                }
 
-            if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() > 8 || pos.getColumn() < 1) {
-                continue;
-            }
-            if (currentBoard.getPiece(pos) != null && currentBoard.getPiece(pos).pieceColor == this.pieceColor){
-                continue;
-            }
-            else {
-                possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                for (int j = pos.getColumn() - 2; j < pos.getColumn() + 2; j++) {
+                    ChessPosition checkP = new ChessPosition(pos.getRow() + 2, j);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                    checkP = new ChessPosition(pos.getRow() + 1, j);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                    checkP = new ChessPosition(pos.getRow() - 1, j);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                    // 2 down row
+                    checkP = new ChessPosition(pos.getRow() - 2, j);
+                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
+                        continue;
+                    }
+                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
+                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                    }
+                }
             }
         }
+
         return possibleMoves;
     }
 
@@ -454,6 +515,15 @@ public class ChessPiece {
         }
 
         return possibleMoves;
+    }
+
+    @Override
+    public ChessPiece clone() {
+        try {
+            return (ChessPiece) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new InternalError(ex);
+        }
     }
 
     @Override
