@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -9,16 +11,18 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame implements Cloneable{
+    private ChessBoard chessBoard;
+    private TeamColor currentTurn;
 
     public ChessGame() {
-
+        this.chessBoard = new ChessBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return currentTurn;
     }
 
     /**
@@ -27,7 +31,7 @@ public class ChessGame implements Cloneable{
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        currentTurn = team;
     }
 
     /**
@@ -46,7 +50,30 @@ public class ChessGame implements Cloneable{
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece currentPiece = chessBoard.getPiece(startPosition);
+        Collection<ChessMove> pieceMoves = new HashSet<>();
+        Collection<ChessMove> MovVal = new HashSet<>();
+        if (currPiece.pieceMoves(chessBoard, startPosition).isEmpty()) {
+            return null;
+        } else {
+            pieceMoves = currentPiece.pieceMoves(chessBoard, startPosition);
+        }
+
+        for (ChessMove move : pieceMoves) {
+            ChessPosition endP = move.getEndPosition();
+            ChessPosition startP = move.getStartPosition();
+            if (this.chessBoard.getPiece(endP) == null || (this.chessBoard.getPiece(endP) != null && this.chessBoard.getPiece(endP).getTeamColor() != currentTurn)) {
+                ChessGame alterG = this.clone();
+                alterG.chessBoard.addPiece(endP, currentPiece);
+                alterG.chessBoard.addPiece(startP, null);
+                if (!alterG.isInCheck(currentPiece.getTeamColor())) {
+                    MovVal.add(move);
+                }
+            }
+        }
+
+        return MovVal;
+    }
     }
 
     /**
@@ -96,7 +123,7 @@ public class ChessGame implements Cloneable{
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.chessBoard = board;
     }
 
     /**
@@ -105,7 +132,7 @@ public class ChessGame implements Cloneable{
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return this.chessBoard;
     }
     @Override
     public ChessGame clone() {
