@@ -149,7 +149,28 @@ public class ChessGame implements Cloneable{
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        TeamColor attackingTeam = teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+        boolean isInCheck = false;
+
+        loop:
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition attaccPos = new ChessPosition(i, j);
+                ChessPiece attaccPiece = this.chessBoard.getPiece(attaccPos);
+
+                if (attaccPiece != null && attaccPiece.getTeamColor() == attackingTeam) {
+                    Collection<ChessMove> attackingMoves = attaccPiece.pieceMoves(this.chessBoard, attaccPos);
+
+                    for (ChessMove move : attackingMoves) {
+                        if (this.chessBoard.getPiece(move.getEndPosition()) != null && this.chessBoard.getPiece(move.getEndPosition()).getPieceType() == ChessPiece.PieceType.KING && this.chessBoard.getPiece(move.getEndPosition()).getTeamColor() != attackingTeam) {
+                            isInCheck = true;
+                            break loop;
+                        }
+                    }
+                }
+            }
+        }
+        return isInCheck;
     }
 
     /**
