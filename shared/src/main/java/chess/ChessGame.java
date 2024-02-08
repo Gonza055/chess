@@ -53,7 +53,7 @@ public class ChessGame implements Cloneable{
         ChessPiece currentPiece = chessBoard.getPiece(startPosition);
         Collection<ChessMove> pieceMoves = new HashSet<>();
         Collection<ChessMove> MovVal = new HashSet<>();
-        if (currPiece.pieceMoves(chessBoard, startPosition).isEmpty()) {
+        if (currentPiece.pieceMoves(chessBoard, startPosition).isEmpty()) {
             return null;
         } else {
             pieceMoves = currentPiece.pieceMoves(chessBoard, startPosition);
@@ -73,7 +73,6 @@ public class ChessGame implements Cloneable{
         }
 
         return MovVal;
-    }
     }
 
     /**
