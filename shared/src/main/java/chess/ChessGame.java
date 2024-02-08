@@ -8,7 +8,7 @@ import java.util.Collection;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessGame {
+public class ChessGame implements Cloneable{
 
     public ChessGame() {
 
@@ -107,4 +107,16 @@ public class ChessGame {
     public ChessBoard getBoard() {
         throw new RuntimeException("Not implemented");
     }
+    @Override
+    public ChessGame clone() {
+        try {
+            ChessGame clone = (ChessGame) super.clone();
+            clone.chessBoard = this.chessBoard.clone();
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new InternalError(ex);
+        }
+    }
+
+
 }
