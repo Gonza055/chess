@@ -82,8 +82,65 @@ public class ChessGame implements Cloneable{
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition startP = move.getStartPosition();
+        ChessPosition endP = move.getEndPosition();
+        ChessPiece.PieceType promotionPiece = move.getPromotionPiece();
+        ChessPiece currentPiece = this.chessBoard.getPiece(startP);
+
+        if (isInCheckmate(currentTurn)) {
+            throw new InvalidMoveException("ERROR: IN CHECKMATE");
+        }
+        if (currentPiece.getTeamColor() == getTeamTurn()) {
+            Collection<ChessMove> valMoves = validMoves(startP);
+            if (valMoves == null) {
+                throw new InvalidMoveException("ERROR: NO VALID MOVES");
+            } else if (!(valMoves.contains(move))) {
+                throw new InvalidMoveException("ERROR: INVALID MOVE");
+            }
+            if (isInCheck(getTeamTurn())) {
+                if (this.chessBoard.getPiece(endP) == null || (this.chessBoard.getPiece(endP) != null && this.chessBoard.getPiece(endP).getTeamColor() != currentTurn)) {
+                    ChessGame alterG = this.clone();
+                    alterG.chessBoard.addPiece(endP, currentPiece);
+                    alterG.chessBoard.addPiece(startP, null);
+                    if (alterG.isInCheck(getTeamTurn())) {
+                        throw new InvalidMoveException("ERROR: STILL IN CHECK");
+                    } else {
+                        if (promotionPiece != null) {
+                            ChessPiece promotedPiece = new ChessPiece(currentTurn, promotionPiece);
+                            this.chessBoard.addPiece(endP, promotedPiece);
+                            this.chessBoard.addPiece(startP, null);
+                        } else {
+                            this.chessBoard.addPiece(endP, currentPiece);
+                            this.chessBoard.addPiece(startP, null);
+                        }
+                    }
+                } else {
+                    throw new InvalidMoveException("ERROR: IN CHECK");
+                }
+            } else {
+                ChessGame alterG = this.clone();
+                alterG.chessBoard.addPiece(endP, currentPiece);
+                alterG.chessBoard.addPiece(startP, null);
+                if (alterG.isInCheck(getTeamTurn())) {
+                    throw new InvalidMoveException("ERROR: MOVE WILL PUT YOU IN CHECK");
+                } else {
+                    if (promotionPiece != null) {
+                        ChessPiece promotedPiece = new ChessPiece(currentTurn, promotionPiece);
+                        this.chessBoard.addPiece(endP, promotedPiece);
+                        this.chessBoard.addPiece(startP, null);
+                    } else {
+                        this.chessBoard.addPiece(endP, currentPiece);
+                        this.chessBoard.addPiece(startP, null);
+                    }
+                }
+            }
+
+        } else {
+            throw new InvalidMoveException("ERROR: NOT YOUR TURN");
+        }
+        currentTurn = currentPiece.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
+
 
     /**
      * Determines if the given team is in check
