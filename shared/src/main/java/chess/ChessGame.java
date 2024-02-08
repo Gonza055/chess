@@ -180,7 +180,29 @@ public class ChessGame implements Cloneable{
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        boolean Checkmate = false;
+        if (!isInCheck(currentTurn)) return false;
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition alliedPos = new ChessPosition(i, j);
+                ChessPiece alliedPiece = this.chessBoard.getPiece(alliedPos);
+                if (alliedPiece == null || alliedPiece.getTeamColor() != teamColor) continue;
+                Collection<ChessMove> alliedMov = alliedPiece.pieceMoves(this.chessBoard, alliedPos);
+                for (ChessMove move : alliedMov) {
+                    ChessPosition endP = move.getEndPosition();
+                    ChessPosition startP = move.getStartPosition();
+                    ChessGame alterG = this.clone();
+                    alterG.chessBoard.addPiece(endP, alliedPiece);
+                    alterG.chessBoard.addPiece(startP, null);
+                    if (!alterG.isInCheck(teamColor)) {
+                        return false;
+                    } else {
+                        Checkmate = true;
+                    }
+                }
+            }
+        }
+        return Checkmate;
     }
 
     /**
