@@ -91,10 +91,10 @@ public class ChessGame implements Cloneable{
             throw new InvalidMoveException("ERROR: IN CHECKMATE");
         }
         if (currentPiece.getTeamColor() == getTeamTurn()) {
-            Collection<ChessMove> valMoves = validMoves(startP);
-            if (valMoves == null) {
+            Collection<ChessMove> MovVal = validMoves(startP);
+            if (MovVal == null) {
                 throw new InvalidMoveException("ERROR: NO VALID MOVES");
-            } else if (!(valMoves.contains(move))) {
+            } else if (!(MovVal.contains(move))) {
                 throw new InvalidMoveException("ERROR: INVALID MOVE");
             }
             if (isInCheck(getTeamTurn())) {
@@ -218,20 +218,15 @@ public class ChessGame implements Cloneable{
             for (int j = 1; j < 9; j++) {
                 ChessPosition alliedPos = new ChessPosition(i, j);
                 ChessPiece alliedPiece = this.chessBoard.getPiece(alliedPos);
-
                 if (alliedPiece != null && alliedPiece.getTeamColor() == teamColor) {
                     Collection<ChessMove> alliedMov = alliedPiece.pieceMoves(this.chessBoard, alliedPos);
                     for (ChessMove move : alliedMov) {
                         ChessPosition endP = move.getEndPosition();
                         ChessPosition startP = move.getStartPosition();
-
                         if (this.chessBoard.getPiece(endP) == null || (this.chessBoard.getPiece(endP) != null && this.chessBoard.getPiece(endP).getTeamColor() != currentTurn)) {
-                            // Create alternate universe game to see if move will put us into check
                             ChessGame alterG = this.clone();
                             alterG.chessBoard.addPiece(endP, alliedPiece);
                             alterG.chessBoard.addPiece(startP, null);
-
-                            // If all moves keep us in check, we're in checkmate
                             if (alterG.isInCheck(teamColor)) {
                                 Stalemate = true;
                             } else {
@@ -275,10 +270,10 @@ public class ChessGame implements Cloneable{
     }
 
     @Override
-    public boolean equals(Object objetito) {
-        if (this == objetito) return true;
-        if (objetito == null || getClass() != objetito.getClass()) return false;
-        ChessGame chessGame=(ChessGame) objetito;
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        ChessGame chessGame=(ChessGame) object;
         return Objects.deepEquals(chessBoard, chessGame.chessBoard) && currentTurn == chessGame.currentTurn;
     }
 
