@@ -4,12 +4,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 
-/**
- * Represents a single chess piece
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessPiece implements Cloneable{
 
     private PieceType pieceType;
@@ -20,9 +14,6 @@ public class ChessPiece implements Cloneable{
         this.pieceColor = pieceColor;
     }
 
-    /**
-     * The various different chess piece options
-     */
     public enum PieceType {
         KING,
         QUEEN,
@@ -32,27 +23,17 @@ public class ChessPiece implements Cloneable{
         PAWN
     }
 
-    /**
-     * @return Which team this chess piece belongs to
-     */
+
     public ChessGame.TeamColor getTeamColor() {
         return this.pieceColor;
     }
 
-    /**
-     * @return which type of chess piece this piece is
-     */
+
     public PieceType getPieceType() {
         return this.pieceType;
     }
 
-    /**
-     * Calculates all the positions a chess piece can move to
-     * Does not take into account moves that are illegal due to leaving the king in
-     * danger
-     *
-     * @return Collection of valid moves
-     */
+
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> possibleMoves = new HashSet<>();
         switch (this.pieceType) {
@@ -79,6 +60,16 @@ public class ChessPiece implements Cloneable{
         }
         return possibleMoves;
     }
+
+    public boolean outOfRange(ChessBoard myBoard, ChessPosition currentPos, Collection<ChessMove> potentialMoves, ChessPosition pos, ChessPosition checkPos) {
+        if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
+            return true;
+        }
+        if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)) {
+            potentialMoves.add(new ChessMove(currentPos, pos, null));
+        }
+        return false;
+    }
     private Collection<ChessMove> kMoves(ChessBoard currentBoard, ChessPosition currentPosition) {
         int currentRow = currentPosition.getRow();
         int currentCol = currentPosition.getColumn();
@@ -96,74 +87,28 @@ public class ChessPiece implements Cloneable{
         possiblePositions.add(new ChessPosition(currentRow - 1, currentCol +1));
 
         for (ChessPosition pos: possiblePositions) {
-            if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() < 1 || pos.getColumn() > 8) {
+            if (obCheck(pos, currentBoard)) {
                 continue;
-            }
-            if (currentBoard.getPiece(pos) != null && currentBoard.getPiece(pos).pieceColor == this.pieceColor) {
-                continue;
-            }
-            else{
+            } else {
                 for (int i = pos.getRow() - 2; i < pos.getRow() + 2; i++) {
-                    ChessPosition checkP = new ChessPosition(i, pos.getColumn() - 2);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
-                    checkP = new ChessPosition(i, pos.getColumn() - 1);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
-                    checkP = new ChessPosition(i, pos.getColumn() + 1);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
-                    checkP = new ChessPosition(i, pos.getColumn() + 2);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
+                    ChessPosition checkPos = new ChessPosition(i, pos.getColumn() - 2);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    checkPos = new ChessPosition(i, pos.getColumn() - 1);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    checkPos = new ChessPosition(i, pos.getColumn() + 1);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    checkPos = new ChessPosition(i, pos.getColumn() + 2);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
                 }
-
                 for (int j = pos.getColumn() - 2; j < pos.getColumn() + 2; j++) {
-                    ChessPosition checkP = new ChessPosition(pos.getRow() + 2, j);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
-                    checkP = new ChessPosition(pos.getRow() + 1, j);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
-                    checkP = new ChessPosition(pos.getRow() - 1, j);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
-                    // 2 down row
-                    checkP = new ChessPosition(pos.getRow() - 2, j);
-                    if (checkP.getRow() < 1 || checkP.getRow() > 8 || checkP.getColumn() < 1 || checkP.getColumn() > 8) {
-                        continue;
-                    }
-                    if (currentBoard.getPiece(checkP) == null || (currentBoard.getPiece(checkP) != null && currentBoard.getPiece(checkP).pieceType != PieceType.KING)){
-                        possibleMoves.add(new ChessMove(currentPosition, pos, null));
-                    }
+                    ChessPosition checkPos = new ChessPosition(pos.getRow() + 2, j);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    checkPos = new ChessPosition(pos.getRow() + 1, j);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    checkPos = new ChessPosition(pos.getRow() - 1, j);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    checkPos = new ChessPosition(pos.getRow() - 2, j);
+                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
                 }
             }
         }
