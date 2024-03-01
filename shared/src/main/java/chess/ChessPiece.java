@@ -277,25 +277,22 @@ public class ChessPiece implements Cloneable{
         private Collection<ChessMove> diagonalCheck(ChessBoard currentBoard, ChessPosition currentPos, int currentRow, int currentCol) {
             Collection<ChessMove> potentialMoves = new HashSet<>();
 
-            // Diagonal checking UP-LEFT
             for (int i = currentRow + 1, j = currentCol - 1; i <= 8 && j > 0; i++, j--) {
                 ChessPosition possiblePosition = new ChessPosition(i, j);
                 processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
                 if (currentBoard.getPiece(possiblePosition) != null) break;
             }
-            // Diagonal checking UP-RIGHT
+
             for (int i = currentRow + 1, j = currentCol + 1; i <= 8 && j <= 8; i++, j++) {
                 ChessPosition possiblePosition = new ChessPosition(i, j);
                 processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
                 if (currentBoard.getPiece(possiblePosition) != null) break;
             }
-            // Diagonal checking DOWN-LEFT
             for (int i = currentRow - 1, j = currentCol - 1; i > 0 && j > 0; i--, j--) {
                 ChessPosition possiblePosition = new ChessPosition(i, j);
                 processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
                 if (currentBoard.getPiece(possiblePosition) != null) break;
             }
-            // Diagonal checking DOWN-RIGHT
             for (int i = currentRow - 1, j = currentCol + 1; i > 0 && j <= 8; i--, j++) {
                 ChessPosition possiblePosition = new ChessPosition(i, j);
                 processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
