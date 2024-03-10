@@ -1,6 +1,7 @@
 package service;
 
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
@@ -13,7 +14,7 @@ import response.RegisterResponse;
 import java.util.UUID;
 
 public class UserService {
-    public RegisterResponse regRespond(RegisterRequest req, UserDAO userObj, AuthDAO authObj) {
+    public RegisterResponse regRespond(RegisterRequest req, UserDAO userObj, AuthDAO authObj) throws DataAccessException {
         String username = null;
         String authToken = null;
         String message = "";
@@ -27,34 +28,34 @@ public class UserService {
             return new RegisterResponse(username, authToken, message, status);
         }
 
-        for (int i = 0; i < userObj.userList.size(); i = i + 1) {
-            if (userObj.userList.get(i).username().equals(req.getUsername())) {
-                username = null;
-                authToken = null;
+        for (int i = 0; i < userObj.getSize(); i = i + 1) {
+            if(userObj.getUser(i) == null) continue;
+            if (userObj.getUser(i).username().equals(req.getUsername())) {
                 message = "ERROR - User already exists";
                 status = 403;
-                return new RegisterResponse(username, authToken, message, status);
+                return new RegisterResponse(null, null, message, status);
             }
         }
 
         UserData userDataToAdd = new UserData(req.getUsername(), req.getPassword(), req.getEmail());
-        AuthData authDataToAdd = new AuthData(UUID.randomUUID().toString(), req.getUsername());
         username = req.getUsername();
         userObj.createUser(userDataToAdd);
-        authObj.createAuth(authDataToAdd);
+        AuthData authDataToAdd = new AuthData(UUID.randomUUID().toString(), req.getUsername());
         authToken = authDataToAdd.authToken();
+        authObj.createAuth(authDataToAdd);
 
         return new RegisterResponse(username, authToken, message, status);
     }
 
-    public LoginResponse loginRespond(LoginRequest req, UserDAO userObj, AuthDAO authObj) {
+    public LoginResponse loginRespond(LoginRequest req, UserDAO userObj, AuthDAO authObj) throws DataAccessException {
         String username = req.getUsername();
         String authToken = "";
 
-        for (int i = 0; i < userObj.userList.size(); i = i + 1) {
-            if (userObj.userList.get(i).username().equals(req.getUsername()) && req.password.equals(userObj.userList.get(i).password())) {
+        for (int i = 0; i < userObj.getSize(); i = i + 1) {
+            if (userObj.getUser(i) == null) continue;
+            if (userObj.getUser(i).username().equals(req.getUsername()) && req.password.equals(userObj.getUser(i).password())) {
                 authToken = UUID.randomUUID().toString();
-                authObj.authList.add(new AuthData(authToken, username));
+                authObj.createAuth(new AuthData(authToken, username));
                 return new LoginResponse(username, authToken, "", 200);
             }
             else {
@@ -65,10 +66,11 @@ public class UserService {
         return new LoginResponse(null, null, "ERROR - User does not exist", 401);
     }
 
-    public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) {
-        for (int i = 0; i < authObj.authList.size(); i = i + 1) {
-            if (authToken.equals(authObj.authList.get(i).authToken())) {
-                authObj.authList.remove(i);
+    public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) throws DataAccessException {
+        for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authObj.getAuthByID(i) == null) continue;
+            if (authObj.getAuthByID(i).authToken().equals(authToken)) {
+                authObj.removeAuth(authObj.getAuthByID(i));
                 return new LogoutResponse(null, 200);
             }
         }

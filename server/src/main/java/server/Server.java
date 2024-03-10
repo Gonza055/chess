@@ -1,16 +1,16 @@
 package server;
 
-import dataAccess.AuthDAO;
-import dataAccess.GameDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
 import handler.*;
 import spark.*;
 
+import javax.xml.crypto.Data;
+
 public class Server {
 
-    UserDAO userObj = new UserDAO();
-    AuthDAO authObj = new AuthDAO();
-    GameDAO gameObj = new GameDAO();
+    UserDAO userObj = new SQLUserDAO();
+    AuthDAO authObj = new SQLAuthDAO();
+    GameDAO gameObj = new SQLGameDAO();
 
     public static void main(String[] args) {
         Server myServer = new Server();
@@ -22,6 +22,12 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", ((request, response) -> new ClearHandler().handle(request, response, userObj, authObj, gameObj)));
