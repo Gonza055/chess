@@ -1,5 +1,4 @@
 package response;
-
 public class RegisterResponse {
     public String username;
     public String authToken;
