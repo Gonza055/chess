@@ -1,5 +1,4 @@
 package dataAccessTests;
-
 import dataAccess.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +10,9 @@ import response.*;
 import service.DBService;
 import service.GameService;
 import service.UserService;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 public class DataAccessTests {
-
     private UserService userService = new UserService();
     private DBService dbService = new DBService();
     private GameService gameService = new GameService();
@@ -31,7 +27,6 @@ public class DataAccessTests {
         authDAO.clearAuthList();
         gameDAO.clearGameList();
     }
-
     @Test
     public void goodRegRespond() throws DataAccessException {
         RegisterRequest req = new RegisterRequest("TestUser", "Pass", "my@mail.com");

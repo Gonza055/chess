@@ -1,5 +1,4 @@
 package service;
-
 import chess.ChessGame;
 import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
@@ -10,7 +9,6 @@ import request.JoinGameRequest;
 import response.CreateGameResponse;
 import response.ListGamesResponse;
 import response.JoinGameResponse;
-
 public class GameService {
     public ListGamesResponse listGamesRespond(String authToken, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
         boolean authenticated = false;
