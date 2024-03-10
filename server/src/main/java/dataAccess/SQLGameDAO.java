@@ -4,27 +4,22 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 import model.UserData;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
 public class SQLGameDAO implements GameDAO {
     public int currentID = 0;
-
     @Override
     public void createGame(GameData game) {
-
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO games (ID, gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?, ?)")) {
             preparedStatement.setInt(1, currentID);
             currentID = currentID + 1;
@@ -45,24 +40,20 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     @Override
     public int getCurrentID() {
         return currentID + 1;
     }
-
     @Override
     public void setCurrentID(int i) {
         currentID = i;
     }
-
     @Override
     public void removeGame(int index) {
         Connection conn = null;
@@ -71,7 +62,6 @@ public class SQLGameDAO implements GameDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE * FROM games WHERE gameID = (?)")) {
             preparedStatement.setInt(1, index);
             preparedStatement.executeUpdate();
@@ -98,7 +88,6 @@ public class SQLGameDAO implements GameDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM games WHERE ID = (?)")) {
             preparedStatement.setInt(1, index);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -110,13 +99,11 @@ public class SQLGameDAO implements GameDAO {
                     String jsonGame = resultSet.getString("game");
                     Gson gson = new Gson();
                     ChessGame gameFromJSON = gson.fromJson(jsonGame, ChessGame.class);
-
                     try {
                         conn.close();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-
                     return new GameData(gameID, whiteUsername, blackUsername, gameName, gameFromJSON);
                 }
             }
@@ -127,16 +114,13 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return null;
     }
-
     @Override
     public void setGame(int index, GameData game) {
         Connection conn = null;
@@ -145,7 +129,6 @@ public class SQLGameDAO implements GameDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?) WHERE ID = (?)")) {
             preparedStatement.setInt(1, game.gameID());
             preparedStatement.setString(2, game.whiteUsername());
@@ -165,19 +148,16 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     @Override
     public int getSize() {
         return currentID + 1;
     }
-
     @Override
     public void clearGameList() {
         Connection conn = null;
@@ -186,7 +166,6 @@ public class SQLGameDAO implements GameDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE games")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -196,27 +175,22 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         currentID = 0;
     }
-
     @Override
     public List<GameData> returnGameList() {
         List<GameData> gameList = new ArrayList<>();
-
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM games")) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while(resultSet.next()) {
@@ -237,13 +211,11 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return gameList;
     }
 }
