@@ -5,10 +5,45 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e2127a23-f6c5-4361-9314-19f7fd19bf87" name="Changes" comment="fix(maven) to build and test phase 6">
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/service/DBService.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/service/DBService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/service/GameService.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/service/GameService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/main/java/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/main/java/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/test/java/dataAccessTests/DataAccessTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/test/java/dataAccessTests/DataAccessTests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/checkstyle-idea.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/libraries/google_code_gson.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/libraries/junit_jupiter.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/libraries/lib.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/LICENSE" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/client/client.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/client/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/client/src/main/java/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/server/lib/passoff-dependencies.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/server/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/server/server.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/server/src/main/java/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/shared.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/main/java/chess/ChessBoard.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/main/java/chess/ChessGame.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/main/java/chess/ChessMove.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/main/java/chess/ChessPiece.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/main/java/chess/ChessPosition.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/main/java/chess/InvalidMoveException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/TestFactory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/ChessBoardTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/ChessMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/ChessPositionTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/chessPieceTests/BishopMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/chessPieceTests/KingMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/chessPieceTests/KnightMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/chessPieceTests/PawnMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/chessPieceTests/QueenMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/chessx/shared/src/test/java/passoffTests/chessTests/chessPieceTests/RookMoveTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/client.iml" beforeDir="false" afterPath="$PROJECT_DIR$/client/client.iml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,23 +67,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/gloay/Documents/CS240/chess&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/gloay/Documents/CS240/chess",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/server/lib" />
@@ -90,7 +126,8 @@
       <workItem from="1707460815058" duration="385000" />
       <workItem from="1707880084864" duration="2568000" />
       <workItem from="1709185754507" duration="9224000" />
-      <workItem from="1710048325064" duration="1002000" />
+      <workItem from="1710048325064" duration="1675000" />
+      <workItem from="1711172048232" duration="131000" />
     </task>
     <task id="LOCAL-00001" summary="fix(tests) removed extra credit tests">
       <option name="closed" value="true" />
