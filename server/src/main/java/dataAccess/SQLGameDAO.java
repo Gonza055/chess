@@ -1,9 +1,7 @@
 package dataAccess;
-
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
-import model.UserData;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,8 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 public class SQLGameDAO implements GameDAO {
     public int currentID = 0;
+    public void updateIndex() {
+        String sql = "SELECT MAX(ID) AS max_id FROM games";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                this.currentID = rs.getInt("max_id") + 1;
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
     @Override
     public void createGame(GameData game) {
+
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -27,7 +38,7 @@ public class SQLGameDAO implements GameDAO {
             preparedStatement.setString(3, game.whiteUsername());
             preparedStatement.setString(4, game.blackUsername());
             preparedStatement.setString(5, game.gameName());
-            // Serialize Game object to JSON
+
             Gson gson = new Gson();
             String jsonGame;
             jsonGame = gson.toJson(game.game());
@@ -72,14 +83,12 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     @Override
     public GameData getGame(int index) {
         Connection conn = null;
@@ -148,6 +157,7 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
@@ -166,6 +176,7 @@ public class SQLGameDAO implements GameDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE games")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -175,6 +186,7 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
@@ -185,6 +197,7 @@ public class SQLGameDAO implements GameDAO {
     @Override
     public List<GameData> returnGameList() {
         List<GameData> gameList = new ArrayList<>();
+
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -216,6 +229,7 @@ public class SQLGameDAO implements GameDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return gameList;
     }
 }

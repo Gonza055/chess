@@ -1,15 +1,22 @@
 package dataAccess;
-
 import model.AuthData;
 import java.sql.*;
-
 public class SQLAuthDAO implements AuthDAO {
-
     public static int authIndex = 0;
-
+    public void updateIndex() {
+        String sql = "SELECT MAX(ID) AS max_id FROM auth";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                this.authIndex = rs.getInt("max_id") + 1;
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
     @Override
     public void createAuth(AuthData authData) {
-
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -29,14 +36,12 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     @Override
     public void removeAuth(AuthData authData) {
         Connection conn = null;
@@ -45,7 +50,6 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE authToken = (?)")) {
             preparedStatement.setString(1, authData.authToken());
             preparedStatement.executeUpdate();
@@ -56,7 +60,6 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
@@ -140,7 +143,6 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE auth")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -150,13 +152,11 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         authIndex = 0;
     }
 }

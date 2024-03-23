@@ -1,13 +1,13 @@
 package dataAccess;
-
 import model.GameData;
 
 import java.util.ArrayList;
 import java.util.List;
-
 public class MemoryGameDAO implements GameDAO {
     public List<GameData> gameList = new ArrayList<>();
     public int currentID = 1;
+    @Override
+    public void updateIndex(){}
     @Override
     public void createGame(GameData game) {
         currentID += 1;
@@ -16,6 +16,14 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public int getCurrentID() {
         return currentID;
+    }
+    @Override
+    public void setCurrentID(int i) {
+        currentID = i;
+    }
+    @Override
+    public void removeGame(int index) {
+        gameList.remove(index);
     }
     @Override
     public GameData getGame(int index) {
@@ -37,13 +45,4 @@ public class MemoryGameDAO implements GameDAO {
     public List<GameData> returnGameList() {
         return gameList;
     }
-    @Override
-    public void setCurrentID(int i) {
-        currentID = i;
-    }
-    @Override
-    public void removeGame(int index) {
-        gameList.remove(index);
-    }
-
 }
