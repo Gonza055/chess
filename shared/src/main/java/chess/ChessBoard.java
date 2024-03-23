@@ -82,10 +82,74 @@ public class ChessBoard implements Cloneable{
 
 
     @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessBoard that = (ChessBoard) o;
+        return Arrays.deepEquals(board, that.board);
+    }
+
+    public String toString(String teamColor) {
+        StringBuilder sb = new StringBuilder();
+        String reset = "\u001B[0m";
+        String black = "\u001B[30m";
+        String red = "\u001B[31m";
+        String blue = "\u001B[34m";
+        String bgWhite = "\u001B[47m";
+        String bgBlack = "\u001B[40m";
+
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
+
+        if (teamColor.equals("WHITE")) {
+            for (int i = 7; i >= 0; i--) {
+                appendRow(sb, i, reset, black, red, blue, bgWhite, bgBlack);
+            }
+        } else {
+            for (int i = 0; i < 8; i++) {
+                appendRow(sb, i, reset, black, red, blue, bgWhite, bgBlack);
+            }
+        }
+
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
+
+        return sb.toString();
+    }
+
+    private void appendRow(StringBuilder sb, int i, String reset, String black, String red, String blue, String bgWhite, String bgBlack) {
+        sb.append(black).append(String.format("%2d", i + 1)).append(" ");
+        for (int j = 0; j < 8; j++) {
+            String bg = ((i + j) % 2 == 0) ? bgWhite : bgBlack;
+            if (board[i][j] == null) {
+                sb.append(bg).append(String.format("%3s", " ")).append(reset); // Increased space for empty squares
+            } else {
+                String color = (board[i][j].getTeamColor() == ChessGame.TeamColor.WHITE) ? red : blue;
+                char pieceChar;
+                switch (board[i][j].getPieceType()) {
+                    case PAWN: pieceChar = 'P'; break;
+                    case ROOK: pieceChar = 'R'; break;
+                    case KNIGHT: pieceChar = 'N'; break;
+                    case BISHOP: pieceChar = 'B'; break;
+                    case KING: pieceChar = 'K'; break;
+                    case QUEEN: pieceChar = 'Q'; break;
+                    default: pieceChar = ' '; break;
+                }
+                sb.append(bg).append(color).append(" ").append(pieceChar).append(" ").append(reset); // Added a space before and after each piece
+            }
+        }
+        sb.append(black).append(" ").append(String.format("%2d", i + 1)).append(reset).append("\n");
+    }
+
+    @Override
     public ChessBoard clone() {
         try {
             ChessBoard clone = (ChessBoard) super.clone();
             clone.board = new ChessPiece[8][8];
+
             for (int row = 0; row < 8; row++) {
                 for (int col = 0; col < 8; col++) {
                     if (this.board[row][col] != null) {
@@ -94,39 +158,8 @@ public class ChessBoard implements Cloneable{
                 }
             }
             return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError(e);
         }
-        catch (CloneNotSupportedException ex) {
-            throw new InternalError(ex);
-        }
-    }
-    @Override
-    public int hashCode(){
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() !=  o.getClass()) return false;
-        ChessBoard ese = (ChessBoard) o;
-        return Arrays.deepEquals(board, ese.board);
-    }
-    @Override
-    public String toString() {
-        String nuevaString = "";
-
-        for (int i = 0; i < 8; i++){
-            for (int j = 0; j < 8; j++){
-                if (board[i][j] != null) {
-                    nuevaString += "Type - ";
-                    nuevaString += board[i][j].getPieceType();
-                    nuevaString += " Color - ";
-                    nuevaString += board[i][j].getTeamColor();
-                    nuevaString += " ";
-                }
-            }
-        }
-
-        return nuevaString;
     }
 }
