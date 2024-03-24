@@ -45,7 +45,7 @@ public class ServerFacadeTests {
     public void goodRegisterTest() throws Exception {
         ServerFacade serverFacade = new ServerFacade("http://localhost", 3000);
         serverFacade.clearDatabase();
-        serverFacade.register("sam", "sam", "test@email.com");
+        serverFacade.register("gonza", "gonza", "test@email.com");
 
         assertEquals(server.userObj.getUser(0).username(), "sam");
     }
@@ -54,7 +54,7 @@ public class ServerFacadeTests {
     public void badRegisterTest() throws Exception {
         ServerFacade serverFacade = new ServerFacade("http://localhost", 3000);
         serverFacade.clearDatabase();
-        serverFacade.register("sam", "sam", "testing@email.com");
+        serverFacade.register("gonza", "gonza", "testing@email.com");
 
         assertNotEquals(null, server.userObj.getUser(0));
     }
