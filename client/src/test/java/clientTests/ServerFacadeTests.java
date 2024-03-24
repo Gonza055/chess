@@ -47,7 +47,7 @@ public class ServerFacadeTests {
         serverFacade.clearDatabase();
         serverFacade.register("gonza", "gonza", "test@email.com");
 
-        assertEquals(server.userObj.getUser(0).username(), "sam");
+        assertEquals(server.userObj.getUser(0).username(), "gonza");
     }
 
     @Test
