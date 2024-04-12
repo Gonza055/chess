@@ -16,6 +16,8 @@ public class ChessGame implements Cloneable{
 
     public ChessGame() {
         this.chessBoard = new ChessBoard();
+        this.chessBoard.resetBoard();
+        this.currentTurn = TeamColor.WHITE;
     }
 
     /**

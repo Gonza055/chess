@@ -1,8 +1,13 @@
 package dataAccess;
+
 import model.AuthData;
+
 import java.sql.*;
+
 public class SQLAuthDAO implements AuthDAO {
+
     public static int authIndex = 0;
+
     public void updateIndex() {
         String sql = "SELECT MAX(ID) AS max_id FROM auth";
         try (Connection conn = DatabaseManager.getConnection();
@@ -15,14 +20,17 @@ public class SQLAuthDAO implements AuthDAO {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void createAuth(AuthData authData) {
+
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (ID, authToken, username) VALUES(?, ?, ?)")) {
             preparedStatement.setInt(1, authIndex);
             authIndex = authIndex + 1;
@@ -36,12 +44,14 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public void removeAuth(AuthData authData) {
         Connection conn = null;
@@ -50,6 +60,7 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE authToken = (?)")) {
             preparedStatement.setString(1, authData.authToken());
             preparedStatement.executeUpdate();
@@ -60,12 +71,14 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public AuthData getAuth(String username) {
         Connection conn = null;
@@ -74,16 +87,19 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM auth WHERE username = (?)")) {
             preparedStatement.setString(1, username);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     String authToken = resultSet.getString("authToken");
+
                     try {
                         conn.close();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+
                     return new AuthData(authToken, username);
                 }
             }
@@ -94,8 +110,50 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         return null;
     }
+
+    public String getUser(String authToken) {
+        Connection conn = null;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM auth WHERE authToken = (?)")) {
+            preparedStatement.setString(1, authToken);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String username = resultSet.getString("username");
+
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    return username;
+                }
+            }
+        } catch (SQLException e) {
+            try {
+                throw new DataAccessException(e.getMessage());
+            } catch (DataAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
     public AuthData getAuthByID(int index) {
         Connection conn = null;
         try {
@@ -103,17 +161,20 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM auth WHERE ID = (?)")) {
             preparedStatement.setInt(1, index);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     String authToken = resultSet.getString("authToken");
                     String username = resultSet.getString("username");
+
                     try {
                         conn.close();
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
+
                     return new AuthData(authToken, username);
                 }
             }
@@ -124,17 +185,21 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         return null;
     }
+
     @Override
     public int getSize() {
         return this.authIndex + 1;
     }
+
     @Override
     public void clearAuthList() {
         Connection conn = null;
@@ -143,6 +208,7 @@ public class SQLAuthDAO implements AuthDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE auth")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -152,11 +218,13 @@ public class SQLAuthDAO implements AuthDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
         authIndex = 0;
     }
 }
