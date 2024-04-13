@@ -1,11 +1,16 @@
 package dataAccess;
+
 import model.UserData;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 public class SQLUserDAO implements UserDAO {
+
     private int userIndex = 0;
+
     public void updateIndex() {
         String sql = "SELECT MAX(ID) AS max_id FROM users";
         try (Connection conn = DatabaseManager.getConnection();
@@ -26,6 +31,7 @@ public class SQLUserDAO implements UserDAO {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO users (ID, username, password, email) VALUES(?, ?, ?, ?)")) {
             preparedStatement.setInt(1, this.userIndex);
             preparedStatement.setString(2, newUser.username());
@@ -40,17 +46,12 @@ public class SQLUserDAO implements UserDAO {
                 throw new RuntimeException(ex);
             }
         }
+
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void removeUser(int index) {
-        // Not implemented
-        return;
     }
 
     @Override
@@ -80,21 +81,26 @@ public class SQLUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException();
         }
+        tryClosing(conn);
 
+        return null;
+    }
+
+    private void tryClosing(Connection conn) {
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        return null;
     }
+
+    @Override
+    public int getSize() {
+        return this.userIndex + 1;
+    }
+
     @Override
     public void clearUserList() {
         Connection conn = null;
@@ -122,10 +128,4 @@ public class SQLUserDAO implements UserDAO {
 
         userIndex = 0;
     }
-    @Override
-    public int getSize() {
-        return this.userIndex + 1;
-    }
-
-
 }
