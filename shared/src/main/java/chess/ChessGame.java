@@ -13,6 +13,7 @@ import java.util.Objects;
 public class ChessGame implements Cloneable{
     private ChessBoard chessBoard;
     private TeamColor currentTurn;
+    private boolean gameOver,
 
     public ChessGame() {
         this.chessBoard = new ChessBoard();
