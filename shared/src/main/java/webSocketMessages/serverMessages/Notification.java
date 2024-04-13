@@ -5,6 +5,10 @@ public class Notification extends ServerMessage{
 
     public Notification(ServerMessageType type, String message) {
         super(type);
-        message = message;
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

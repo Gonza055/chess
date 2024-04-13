@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.Collection;
 import java.util.Arrays;
 
 /**
@@ -94,18 +95,27 @@ public class ChessBoard implements Cloneable{
         return Arrays.deepEquals(board, that.board);
     }
 
-    public String toString(String teamColor) {
-        StringBuilder sb = new StringBuilder();
-        String reset = "\u001B[0m";
-        String black = "\u001B[30m";
-        String red = "\u001B[31m";
-        String blue = "\u001B[34m";
         String bgWhite = "\u001B[47m";
         String bgBlack = "\u001B[40m";
+        String red = "\u001B[31m";
+        String blue = "\u001B[34m";
+        String reset = "\u001B[0m";
+        String black = "\u001B[30m";
 
+
+    public String toString(String teamColor) {
+        StringBuilder sb = new StringBuilder();
+
+        sb = buildBoard(teamColor, sb, reset, black, red, blue, bgWhite, bgBlack);
+
+        return sb.toString();
+    }
+
+
+    private StringBuilder buildBoard(String teamColor, StringBuilder sb, String reset, String black, String red, String blue, String bgWhite, String bgBlack) {
         sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
 
-        if (teamColor.equals("WHITE")) {
+        if (teamColor == null || teamColor.equals("WHITE")) {
             for (int i = 7; i >= 0; i--) {
                 appendRow(sb, i, reset, black, red, blue, bgWhite, bgBlack);
             }
@@ -116,7 +126,26 @@ public class ChessBoard implements Cloneable{
         }
 
         sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
+        return sb;
+    }
 
+
+    public String toStringHighlighted(String teamColor, Collection<ChessMove> possibleMoves) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
+
+        if (teamColor.equals("WHITE")) {
+            for (int i = 7; i >= 0; i--) {
+                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves);
+            }
+        } else {
+            for (int i = 0; i < 8; i++) {
+                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves);
+            }
+        }
+
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
         return sb.toString();
     }
 
