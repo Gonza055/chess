@@ -113,7 +113,7 @@ public class WebSocketHandler {
         }
         // Are we in checkmate?
         else if (gameData.game().isInCheckmate(ChessGame.TeamColor.WHITE) || gameData.game().isInCheckmate(ChessGame.TeamColor.BLACK)) {
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Game over.");
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Game over. You cannot move");
             manager.broadcastUser(errorMessage, gameID, authToken);
             // Set gameOver flag of the game and update it in the DAO
             game.setGameOver(true);
@@ -137,6 +137,33 @@ public class WebSocketHandler {
                     var moveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
                             + defaultColor + " has made a move.");
                     manager.broadcastAllButOne(moveMessage, gameID, authToken);
+
+                    // Check for check and checkmate
+                    // Are we in checkmate?
+                    if (gameData.game().isInCheckmate(ChessGame.TeamColor.WHITE) || gameData.game().isInCheckmate(ChessGame.TeamColor.BLACK)) {
+                        if (gameData.game().isInCheckmate(ChessGame.TeamColor.WHITE)) {
+                            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Black wins by checkmate.");
+                            manager.broadcastAll(errorMessage, gameID);
+                        }
+                        else if (gameData.game().isInCheckmate(ChessGame.TeamColor.BLACK)){
+                            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "White wins by checkmate.");
+                            manager.broadcastAll(errorMessage, gameID);
+                        }
+                        // Set gameOver flag of the game and update it in the DAO
+                        game.setGameOver(true);
+                        gameObj.setGame(gameID - 1, gameData);
+                    }
+                    // Are we in check?
+                    else if (gameData.game().isInCheck(ChessGame.TeamColor.WHITE) || gameData.game().isInCheck(ChessGame.TeamColor.BLACK)) {
+                        if (gameData.game().isInCheck(ChessGame.TeamColor.WHITE)) {
+                            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "White is now in check.");
+                            manager.broadcastAll(errorMessage, gameID);
+                        }
+                        else if (gameData.game().isInCheck(ChessGame.TeamColor.BLACK)){
+                            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Black is now in check.");
+                            manager.broadcastAll(errorMessage, gameID);
+                        }
+                    }
                 }
                 else {
                     // Move can't be made. Notify user of invalid move.
@@ -164,25 +191,33 @@ public class WebSocketHandler {
         }
         gameCheck(authToken, gameID, gameData);
 
-        // Is the user that is trying to join on the right team?
-        // If the requesting player is black, and their username matches the blackUsername, good to go
-        // Same for white
-        String reqUser = authObj.getUser(authToken);
-        String whiteUser = gameData.whiteUsername();
-        String blackUser = gameData.blackUsername();
-        if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
-            // Send back a load game message with a game inside it to the user who just joined
-            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game, playerColor);
-            manager.broadcastUser(loadGameMessage, gameID, authToken);
-        } else {
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
+        // Is the game over?
+        if (gameData.game().isGameOver()) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The game is already over.");
             manager.broadcastUser(errorMessage, gameID, authToken);
         }
 
-        // Notify everyone else that the player has joined
-        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                + defaultColor + " has joined the game.");
-        manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        else {
+            // Is the user that is trying to join on the right team?
+            // If the requesting player is black, and their username matches the blackUsername, good to go
+            // Same for white
+            String reqUser = authObj.getUser(authToken);
+            String whiteUser = gameData.whiteUsername();
+            String blackUser = gameData.blackUsername();
+            if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
+                // Send back a load game message with a game inside it to the user who just joined
+                var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game, playerColor);
+                manager.broadcastUser(loadGameMessage, gameID, authToken);
+            } else {
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
+
+            // Notify everyone else that the player has joined
+            var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                    + defaultColor + " has joined the game.");
+            manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        }
     }
 
     private void joinGameAsObserver(String authToken, int gameID, Session session) throws IOException {
@@ -193,13 +228,21 @@ public class WebSocketHandler {
         GameData gameData = gameObj.getGame(gameID - 1);
         gameCheck(authToken, gameID, gameData);
 
-        if (foundAuth) {
-            var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game(), null);
-            manager.broadcastUser(observeMessage, gameID, authToken);
+        // Is the game over?
+        if (gameData.game().isGameOver()) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The game is already over. Type 'help' for a list of commands.");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+        }
 
-            var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                    + defaultColor + " has joined the game.");
-            manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        else {
+            if (foundAuth) {
+                var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game(), null);
+                manager.broadcastUser(observeMessage, gameID, authToken);
+
+                var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                        + defaultColor + " has joined the game.");
+                manager.broadcastAllButOne(joinMessage, gameID, authToken);
+            }
         }
     }
 
