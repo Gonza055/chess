@@ -1,11 +1,9 @@
 package dataAccess;
-
 import model.UserData;
-
 public interface UserDAO {
-    void updateIndex();
-    void createUser(UserData newUser);
-    model.UserData getUser(int index);
-    int getSize();
-    void clearUserList();
+    void updIndex();
+    void crtUser(UserData newUser);
+    model.UserData userGet(int index);
+    int sizeGet();
+    void clrUList();
 }

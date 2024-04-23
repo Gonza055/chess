@@ -1,37 +1,31 @@
 package dataAccess;
-
-import model.UserData;
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Connection;
 import java.sql.SQLException;
-
+import model.UserData;
 public class SQLUserDAO implements UserDAO {
-
     private int userIndex = 0;
-
-    public void updateIndex() {
-        String sql = "SELECT MAX(ID) AS max_id FROM users";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                this.userIndex = rs.getInt("max_id") + 1;
+    public void updIndex() {
+        String squeuel= "SELECT MAX(ID) AS max_id FROM users";
+        try (Connection con = DatabaseManager.getConnection();
+             PreparedStatement stmt = con.prepareStatement(squeuel);
+             ResultSet res = stmt.executeQuery()) {
+            if (res.next()) {
+                this.userIndex = res.getInt("max_id") + 1;
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
     }
     @Override
-    public void createUser(UserData newUser) {
+    public void crtUser(UserData newUser) {
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO users (ID, username, password, email) VALUES(?, ?, ?, ?)")) {
             preparedStatement.setInt(1, this.userIndex);
             preparedStatement.setString(2, newUser.username());
@@ -46,16 +40,41 @@ public class SQLUserDAO implements UserDAO {
                 throw new RuntimeException(ex);
             }
         }
-
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     @Override
-    public UserData getUser(int index) {
+    public void clrUList() {
+        Connection conn = null;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE users")) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            try {
+                throw new DataAccessException(e.getMessage());
+            } catch (DataAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        userIndex = 0;
+    }
+    @Override
+    public UserData userGet(int index) {
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -97,35 +116,7 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public int getSize() {
+    public int sizeGet() {
         return this.userIndex + 1;
-    }
-
-    @Override
-    public void clearUserList() {
-        Connection conn = null;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE users")) {
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        userIndex = 0;
     }
 }

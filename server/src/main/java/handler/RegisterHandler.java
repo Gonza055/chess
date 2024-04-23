@@ -1,22 +1,20 @@
 package handler;
-
-import com.google.gson.Gson;
-import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.UserDAO;
-import request.RegisterRequest;
-import response.RegisterResponse;
-import service.UserService;
 import spark.Request;
+import response.RegisterResponse;
+import com.google.gson.Gson;
+import request.RegisterRequest;
+import service.UserService;
+import dataAccess.DataAccessException;
+import dataAccess.AuthDAO;
 import spark.Response;
-
+import dataAccess.UserDAO;
 public class RegisterHandler {
-    public Object handle (Request request, Response response, UserDAO userObj, AuthDAO authObj) throws DataAccessException {
-        Gson myGson = new Gson();
-        RegisterRequest myRequest = myGson.fromJson(request.body(), RegisterRequest.class);
-        UserService myUserService = new UserService();
-        RegisterResponse myRegResponse = myUserService.regRespond(myRequest, userObj, authObj);
-        response.status(myRegResponse.status);
-        return myGson.toJson(myRegResponse);
+    public Object handle (Request req, Response res, UserDAO userO, AuthDAO authO) throws DataAccessException {
+        Gson jayson= new Gson();
+        RegisterRequest theRequest = jayson.fromJson(req.body(), RegisterRequest.class);
+        UserService userService = new UserService();
+        RegisterResponse regResponse = userService.regRespond(theRequest, userO, authO);
+        res.status(regResponse.status);
+        return jayson.toJson(regResponse);
     }
 }

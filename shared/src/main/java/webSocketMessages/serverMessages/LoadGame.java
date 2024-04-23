@@ -1,22 +1,18 @@
 package webSocketMessages.serverMessages;
-
 import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
-
 public class LoadGame extends ServerMessage{
     String game;
     ChessGame chessGame;
     ChessGame.TeamColor playerColor;
-
-    public LoadGame(ServerMessageType type, ChessGame game, ChessGame.TeamColor playerColor) {
-        super(type);
+    public LoadGame(ServerMessageType typ, ChessGame game, ChessGame.TeamColor plyrColor) {
+        super(typ);
         this.game = new Gson().toJson(game);
         this.chessGame = game;
-        this.playerColor = playerColor;
+        this.playerColor = plyrColor;
     }
-
-    public String getPlayerColor() {
+    public String getPlyrColor() {
         if (playerColor == null) {
             return null;
         }
@@ -24,15 +20,9 @@ public class LoadGame extends ServerMessage{
             return playerColor.toString();
         }
     }
-
     public ChessBoard getGameBoard() {
         return chessGame.getBoard();
     }
-
-    public ChessGame getChessGame() {
-        return chessGame;
-    }
-
     public String getGame(String teamColor) {
         if (teamColor == null) {
             return chessGame.getBoard().toString("WHITE");
@@ -41,4 +31,8 @@ public class LoadGame extends ServerMessage{
             return chessGame.getBoard().toString(teamColor);
         }
     }
+    public ChessGame getChessGame() {
+        return chessGame;
+    }
+
 }

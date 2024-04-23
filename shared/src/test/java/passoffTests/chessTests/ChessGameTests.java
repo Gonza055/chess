@@ -130,7 +130,7 @@ public class ChessGameTests {
     @DisplayName("Invalid Make Move")
     public void invalidMoves() throws InvalidMoveException {
         var board = getNewBoard();
-        board.resetBoard();
+        board.rstBoard();
         var game = getNewGame();
         game.setBoard(board);
         game.setTeamTurn(ChessGame.TeamColor.WHITE);
@@ -520,7 +520,7 @@ public class ChessGameTests {
     @DisplayName("Full Game Checkmate")
     public void scholarsMate() throws InvalidMoveException {
         var board = getNewBoard();
-        board.resetBoard();
+        board.rstBoard();
         var game = getNewGame();
         game.setBoard(board);
         game.setTeamTurn(ChessGame.TeamColor.WHITE);

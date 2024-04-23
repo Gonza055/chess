@@ -1,20 +1,18 @@
 package handler;
-
-import com.google.gson.Gson;
-import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
 import response.LogoutResponse;
-import service.UserService;
-import spark.Request;
+import dataAccess.AuthDAO;
 import spark.Response;
-
+import service.UserService;
+import com.google.gson.Gson;
+import spark.Request;
 public class LogoutHandler {
-    public Object handle(Request request, Response response, AuthDAO authObj) throws DataAccessException {
-        Gson myGson = new Gson();
-        String authToken = request.headers("authorization");
+    public Object handle(Request req, Response res, AuthDAO authO) throws DataAccessException {
+        Gson gson = new Gson();
+        String authToken = req.headers("authorization");
         UserService myUserService = new UserService();
-        LogoutResponse myLogoutResponse = myUserService.logoutRespond(authToken, authObj);
-        response.status(myLogoutResponse.status);
-        return myGson.toJson(myLogoutResponse);
+        LogoutResponse myLogoutResponse = myUserService.logoutRespond(authToken, authO);
+        res.status(myLogoutResponse.status);
+        return gson.toJson(myLogoutResponse);
     }
 }

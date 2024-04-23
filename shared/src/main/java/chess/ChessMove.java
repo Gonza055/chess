@@ -1,92 +1,61 @@
 package chess;
-
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-
-/**
- * Represents moving a chess piece on a chessboard
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessMove {
-
     private final ChessPosition startPosition;
-    private final ChessPosition endPosition;
+    private final ChessPosition endPostion;
     private final ChessPiece.PieceType promotionPiece;
-
-    public ChessMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
-
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
+                     ChessPiece.PieceType promotionPiece) {
         this.startPosition = startPosition;
-        this.endPosition = endPosition;
+        this.endPostion = endPosition;
         this.promotionPiece = promotionPiece;
     }
-
-    /**
-     * @return ChessPosition of starting location
-     */
     public ChessPosition getStartPosition() {
         return this.startPosition;
     }
-
-    /**
-     * @return ChessPosition of ending location
-     */
     public ChessPosition getEndPosition() {
-        return this.endPosition;
+        return this.endPostion;
     }
-
-    /**
-     * Gets the type of piece to promote a pawn to if pawn promotion is part of this
-     * chess move
-     *
-     * @return Type of piece to promote a pawn to, or null if no promotion
-     */
     public ChessPiece.PieceType getPromotionPiece() {
         return this.promotionPiece;
     }
-
     @Override
-    public int hashCode(){
-        int hash = 0;
-        hash = startPosition.getRow() * 157 + startPosition.getColumn();
-        hash += endPosition.getRow() * 31 + endPosition.getColumn();
-        if(promotionPiece != null){
-            switch (promotionPiece){
-                case QUEEN:
-                    hash += 11;
-                    break;
-                case BISHOP:
-                    hash += 17;
-                    break;
-                case KNIGHT:
-                    hash += 23;
-                case ROOK:
-                    hash += 29;
-                    break;
-                default:
-                    hash += 1;
-            }
-        }
-        return hash;
+    public boolean equals(Object o) {
+        if(o == this){return true;}
+        if(!(o instanceof ChessMove)){return false;}
+        ChessMove c = (ChessMove) o;
+        return this.startPosition.equals(c.startPosition) && this.endPostion.equals(c.endPostion) && promotionPiece == c.promotionPiece;
     }
-
-    @Override
-    public boolean equals(Object objetito){
-        if(objetito == this){
-            return true;
-        }
-
-        if(!(objetito instanceof ChessMove)){
-            return false;
-        }
-        ChessMove m = (ChessMove) objetito;
-        return this.startPosition.equals(m.startPosition) && this.endPosition.equals(m.endPosition) && promotionPiece == m.promotionPiece;
-    }
-
     @Override
     public String toString() {
-        return "Move{" + startPosition + ", " + endPosition + ", " + promotionPiece  + "}\n";
+        return "Move{" +
+                startPosition +
+                ", " + endPostion +
+                ", " + promotionPiece +
+                "}\n";
     }
-
+    @Override
+    public int hashCode() {
+        int h = 0;
+        h = startPosition.getRow() * 157 + startPosition.getColumn();
+        h += endPostion.getRow() * 31 + endPostion.getColumn();
+        if(promotionPiece != null){
+            switch (promotionPiece){
+                case BISHOP:
+                    h += 17;
+                    break;
+                case QUEEN:
+                    h += 11;
+                    break;
+                case ROOK:
+                    h += 29;
+                    break;
+                case KNIGHT:
+                    h += 23;
+                    break;
+                default:
+                    h += 1;
+            }
+        }
+        return h;
+    }
 }

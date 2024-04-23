@@ -1,52 +1,37 @@
 package dataAccess;
-
-import java.sql.*;
 import java.util.Properties;
-
+import java.sql.*;
 public class DatabaseManager {
     private static final String databaseName;
     private static final String user;
     private static final String password;
     private static final String connectionUrl;
-
-    /*
-     * Load the database information for the db.properties file.
-     */
     static {
         try {
-            try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
-                if (propStream == null) throw new Exception("Unable to load db.properties");
-                Properties props = new Properties();
-                props.load(propStream);
-                databaseName = props.getProperty("db.name");
-                user = props.getProperty("db.user");
-                password = props.getProperty("db.password");
+            try (var propstream= Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
+                if (propstream == null) throw new Exception("Unable to load db.properties");
+                Properties prop = new Properties();
+                prop.load(propstream);
+                databaseName = prop.getProperty("db.name");
+                user = prop.getProperty("db.user");
+                password = prop.getProperty("db.password");
 
-                var host = props.getProperty("db.host");
-                var port = Integer.parseInt(props.getProperty("db.port"));
+                var host = prop.getProperty("db.host");
+                var port = Integer.parseInt(prop.getProperty("db.port"));
                 connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
             }
         } catch (Exception ex) {
             throw new RuntimeException("unable to process db.properties. " + ex.getMessage());
         }
     }
-
-    /**
-     * Creates the database if it does not already exist.
-     */
     public static void createDatabase() throws DataAccessException {
         try {
-            // Create database
-            var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
-            var conn = DriverManager.getConnection(connectionUrl, user, password);
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
+            var sttmnt= "CREATE DATABASE IF NOT EXISTS " + databaseName;
+            var con= DriverManager.getConnection(connectionUrl, user, password);
+            try (var prepsttmnt= con.prepareStatement(sttmnt)) {
+                prepsttmnt.executeUpdate();
             }
-
-            // Access the database
-            conn.setCatalog(databaseName);
-
-            // Create games table
+            con.setCatalog(databaseName);
             String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
                     "ID INT NOT NULL, " +
                     "gameID INT NOT NULL PRIMARY KEY, " +
@@ -54,51 +39,33 @@ public class DatabaseManager {
                     "blackUsername VARCHAR(255), " +
                     "gameName VARCHAR(255), " +
                     "game JSON" + ")";
-            try (var preparedStatement = conn.prepareStatement(createGamesTable)) {
-                preparedStatement.executeUpdate();
+            try (var prprdsttmnt= con.prepareStatement(createGamesTable)) {
+                prprdsttmnt.executeUpdate();
             }
-
-            // Create users table
             String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                     "ID INT NOT NULL PRIMARY KEY, " +
                     "username VARCHAR(255), " +
                     "password VARCHAR(255), " +
                     "email VARCHAR(255)" + ")";
-            try (var preparedStatement = conn.prepareStatement(createUsersTable)){
-                preparedStatement.executeUpdate();
+            try (var prprdsttmnt = con.prepareStatement(createUsersTable)){
+                prprdsttmnt.executeUpdate();
             }
-
-            // Create auth table
             String createAuthTable = "CREATE TABLE IF NOT EXISTS auth (" +
                     "ID INT NOT NULL PRIMARY KEY, " +
                     "authToken VARCHAR(255), " +
                     "username VARCHAR(255)" + ")";
-            try (var preparedStatement = conn.prepareStatement(createAuthTable)){
-                preparedStatement.executeUpdate();
+            try (var prprdsttmnt = con.prepareStatement(createAuthTable)){
+                prprdsttmnt.executeUpdate();
             }
-
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
     }
-
-    /**
-     * Create a connection to the database and sets the catalog based upon the
-     * properties specified in db.properties. Connections to the database should
-     * be short-lived, and you must close the connection when you are done with it.
-     * The easiest way to do that is with a try-with-resource block.
-     * <br/>
-     * <code>
-     * try (var conn = DbInfo.getConnection(databaseName)) {
-     * // execute SQL statements.
-     * }
-     * </code>
-     */
     static Connection getConnection() throws DataAccessException {
         try {
-            var conn = DriverManager.getConnection(connectionUrl, user, password);
-            conn.setCatalog(databaseName);
-            return conn;
+            var con = DriverManager.getConnection(connectionUrl, user, password);
+            con.setCatalog(databaseName);
+            return con;
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }

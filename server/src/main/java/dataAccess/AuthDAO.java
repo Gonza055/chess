@@ -3,12 +3,14 @@ package dataAccess;
 import model.AuthData;
 
 public interface AuthDAO {
-    void updateIndex();
-    void createAuth(AuthData authData);
-    void removeAuth(AuthData authData);
-    AuthData getAuthByID(int index);
+    void updIndex();
+    void crtAuth(AuthData authData);
+    void rmvAuth(AuthData authData);
+    AuthData getAuthWID(int index);
     model.AuthData getAuth(String username);
-    String getUser(String authToken);
-    int getSize();
+    String userGet(String authToken);
+    int sizeGet();
+    void clrAuthList();
+
     void clearAuthList();
 }

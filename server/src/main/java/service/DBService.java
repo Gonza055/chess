@@ -1,15 +1,15 @@
 package service;
-import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
-import dataAccess.GameDAO;
 import dataAccess.UserDAO;
+import dataAccess.GameDAO;
+import dataAccess.AuthDAO;
 import response.ClearResponse;
-public class DBService {
-    public ClearResponse clearRespond(UserDAO userObj, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
-        userObj.clearUserList();
-        authObj.clearAuthList();
-        gameObj.clearGameList();
-        ClearResponse clearResponse = new ClearResponse(null);
-        return clearResponse;
+;public class DBService {
+    public ClearResponse clearRespond(UserDAO userO, AuthDAO authO, GameDAO gameO) throws DataAccessException {
+        userO.clrUList();
+        authO.clearAuthList();
+        gameO.clearGList();
+        ClearResponse fres = new ClearResponse(null);
+        return fres;
     }
 }

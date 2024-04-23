@@ -1,19 +1,14 @@
 package chess;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-
-public class ChessPiece implements Cloneable{
-
+public class ChessPiece implements Cloneable {
     private PieceType pieceType;
     private ChessGame.TeamColor pieceColor;
-
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceType = type;
         this.pieceColor = pieceColor;
     }
-
     public enum PieceType {
         KING,
         QUEEN,
@@ -22,339 +17,287 @@ public class ChessPiece implements Cloneable{
         ROOK,
         PAWN
     }
-
-
     public ChessGame.TeamColor getTeamColor() {
         return this.pieceColor;
     }
-
-
     public PieceType getPieceType() {
         return this.pieceType;
     }
-
-
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition currentPosition) {
-        Collection<ChessMove> possibleMoves = new HashSet<>();
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        Collection<ChessMove> potMov = new HashSet<>();
         switch (this.pieceType) {
-            case KING:
-                possibleMoves = kMoves(board, currentPosition);
+            case ROOK:
+                potMov = rMoves(board, myPosition);
                 break;
             case QUEEN:
-                possibleMoves = qMoves(board, currentPosition);
+                potMov = qMoves(board, myPosition);
+                break;
+            case KING:
+                potMov = kMoves(board, myPosition);
                 break;
             case BISHOP:
-                possibleMoves = bMoves(board, currentPosition);
+                potMov = bMoves(board, myPosition);
                 break;
             case KNIGHT:
-                possibleMoves = knightMoves(board, currentPosition);
-                break;
-            case ROOK:
-                possibleMoves = rMoves(board, currentPosition);
+                potMov = knightMoves(board, myPosition);
                 break;
             case PAWN:
-                possibleMoves = pMoves(board, currentPosition);
+                potMov = pMoves(board, myPosition);
                 break;
             default:
                 return null;
         }
-        return possibleMoves;
+        return potMov;
     }
-
-    public boolean outOfRange(ChessBoard myBoard, ChessPosition currentPos, Collection<ChessMove> potentialMoves, ChessPosition pos, ChessPosition checkPos) {
-        if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-            return true;
-        }
-        if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)) {
-            potentialMoves.add(new ChessMove(currentPos, pos, null));
-        }
-        return false;
-    }
-    private Collection<ChessMove> kMoves(ChessBoard currentBoard, ChessPosition currentPosition) {
-        int currentRow = currentPosition.getRow();
-        int currentCol = currentPosition.getColumn();
-
-        Collection<ChessMove> possibleMoves = new HashSet<>();
-        Collection<ChessPosition> possiblePositions = new HashSet<>();
-
-        possiblePositions.add(new ChessPosition(currentRow + 1, currentCol));
-        possiblePositions.add(new ChessPosition(currentRow, currentCol +1));
-        possiblePositions.add(new ChessPosition(currentRow -1, currentCol));
-        possiblePositions.add(new ChessPosition(currentRow, currentCol -1));
-        possiblePositions.add(new ChessPosition(currentRow + 1, currentCol -1));
-        possiblePositions.add(new ChessPosition(currentRow + 1, currentCol +1));
-        possiblePositions.add(new ChessPosition(currentRow - 1, currentCol -1));
-        possiblePositions.add(new ChessPosition(currentRow - 1, currentCol +1));
-
-        for (ChessPosition pos: possiblePositions) {
-            if (obCheck(pos, currentBoard)) {
+    private Collection<ChessMove> kMoves(ChessBoard currBoard, ChessPosition thisPos) {
+        int thisRow= thisPos.getRow();
+        int thisCol = thisPos.getColumn();
+        Collection<ChessMove> posMoves= new HashSet<>();
+        Collection<ChessPosition> posPostns= new HashSet<>();
+        posPostns.add(new ChessPosition(thisRow + 1, thisCol - 1));
+        posPostns.add(new ChessPosition(thisRow + 1, thisCol));
+        posPostns.add(new ChessPosition(thisRow + 1, thisCol + 1));
+        posPostns.add(new ChessPosition(thisRow, thisCol - 1));
+        posPostns.add(new ChessPosition(thisRow, thisCol + 1));
+        posPostns.add(new ChessPosition(thisRow - 1, thisCol - 1));
+        posPostns.add(new ChessPosition(thisRow - 1, thisCol));
+        posPostns.add(new ChessPosition(thisRow - 1, thisCol + 1));
+        for (ChessPosition pos : posPostns) {
+            if (obCheck(pos, currBoard)) {
                 continue;
             } else {
                 for (int i = pos.getRow() - 2; i < pos.getRow() + 2; i++) {
                     ChessPosition checkPos = new ChessPosition(i, pos.getColumn() - 2);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                     checkPos = new ChessPosition(i, pos.getColumn() - 1);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                     checkPos = new ChessPosition(i, pos.getColumn() + 1);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                     checkPos = new ChessPosition(i, pos.getColumn() + 2);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                 }
                 for (int j = pos.getColumn() - 2; j < pos.getColumn() + 2; j++) {
                     ChessPosition checkPos = new ChessPosition(pos.getRow() + 2, j);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                     checkPos = new ChessPosition(pos.getRow() + 1, j);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                     checkPos = new ChessPosition(pos.getRow() - 1, j);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                     checkPos = new ChessPosition(pos.getRow() - 2, j);
-                    if (outOfRange(currentBoard, currentPosition, possibleMoves, pos, checkPos)) continue;
+                    if (outOfRange(currBoard, thisPos, posMoves, pos, checkPos)) continue;
                 }
             }
         }
 
-        return possibleMoves;
+        return posMoves;
     }
-
-    private Collection<ChessMove> qMoves(ChessBoard myBoard, ChessPosition currentPos) {
-        int currentRow = currentPos.getRow();
-        int currentCol = currentPos.getColumn();
-
-        Collection<ChessMove> potentialMoves = new HashSet<>();
-        Collection<ChessMove> potentialDMoves = new HashSet<>();
-
-        potentialMoves = rowColCheck(myBoard, currentPos, currentRow, currentCol);
-        potentialDMoves = diagonalCheck(myBoard, currentPos, currentRow, currentCol);
-        potentialMoves.addAll(potentialDMoves);
-        return potentialMoves;
+    public boolean outOfRange(ChessBoard thisBoard, ChessPosition thisPos, Collection<ChessMove> posMoves, ChessPosition position, ChessPosition chckPos) {
+        if (chckPos.getRow() < 1 || chckPos.getRow() > 8 || chckPos.getColumn() < 1 || chckPos.getColumn() > 8) {
+            return true;
+        }
+        if (thisBoard.getPiece(chckPos) == null || (thisBoard.getPiece(chckPos) != null && thisBoard.getPiece(chckPos).pieceType != PieceType.KING)) {
+            posMoves.add(new ChessMove(thisPos, position, null));
+        }
+        return false;
     }
-
-
-
-    private Collection<ChessMove> bMoves(ChessBoard currentBoard, ChessPosition currentPosition) {
-        int currentRow=currentPosition.getRow();
-        int currentCol=currentPosition.getColumn();
-
-        return diagonalCheck(currentBoard, currentPosition, currentRow, currentCol);
+    private Collection<ChessMove> qMoves(ChessBoard currBoard, ChessPosition thisPos) {
+        int currRow = thisPos.getRow();
+        int currCol= thisPos.getColumn();
+        Collection<ChessMove> posMoves= new HashSet<>();
+        Collection<ChessMove> posDMoves= new HashSet<>();
+        posMoves= checkRow(currBoard, thisPos, currRow, currCol);
+        posDMoves= checkDiagonal(currBoard, thisPos, currRow, currCol);
+        posMoves.addAll(posDMoves);
+        return posMoves;
     }
-
-
-    private Collection<ChessMove> knightMoves(ChessBoard currentBoard, ChessPosition currentPosition) {
-        int currentRow=currentPosition.getRow();
-        int currentCol=currentPosition.getColumn();
-
-        Collection<ChessMove> possibleMoves=new HashSet<>();
-        Collection<ChessPosition> possiblePositions=new HashSet<>();
-
-        possiblePositions.add(new ChessPosition(currentRow + 1, currentCol -2));
-        possiblePositions.add(new ChessPosition(currentRow +2, currentCol -1));
-        possiblePositions.add(new ChessPosition(currentRow +1, currentCol +2));
-        possiblePositions.add(new ChessPosition(currentRow +2, currentCol +1));
-        possiblePositions.add(new ChessPosition(currentRow -1, currentCol -2));
-        possiblePositions.add(new ChessPosition(currentRow -2, currentCol -1));
-        possiblePositions.add(new ChessPosition(currentRow -1, currentCol +2));
-        possiblePositions.add(new ChessPosition(currentRow -2, currentCol +1));
-
-        for (ChessPosition pos: possiblePositions) {
-            if (obCheck(pos, currentBoard)) {
+    private Collection<ChessMove> bMoves(ChessBoard currBoard, ChessPosition thisPos) {
+        int currentRow = thisPos.getRow();
+        int currentCol = thisPos.getColumn();
+        return checkDiagonal(currBoard, thisPos, currentRow, currentCol);
+    }
+    private Collection<ChessMove> knightMoves(ChessBoard currBoard, ChessPosition thisPos) {
+        int thisRow= thisPos.getRow();
+        int thisCol = thisPos.getColumn();
+        Collection<ChessMove> posMoves= new HashSet<>();
+        Collection<ChessPosition> posPostns= new HashSet<>();
+        posPostns.add(new ChessPosition(thisRow + 1, thisCol - 2));
+        posPostns.add(new ChessPosition(thisRow + 1, thisCol + 2));
+        posPostns.add(new ChessPosition(thisRow + 2, thisCol - 1));
+        posPostns.add(new ChessPosition(thisRow + 2, thisCol + 1));
+        posPostns.add(new ChessPosition(thisRow - 1, thisCol - 2));
+        posPostns.add(new ChessPosition(thisRow - 1, thisCol + 2));
+        posPostns.add(new ChessPosition(thisRow - 2, thisCol - 1));
+        posPostns.add(new ChessPosition(thisRow - 2, thisCol + 1));
+        for (ChessPosition pos : posPostns) {
+            if (obCheck(pos, currBoard)) {
                 continue;
             } else {
-                possibleMoves.add(new ChessMove(currentPosition, pos, null));
+                posMoves.add(new ChessMove(thisPos, pos, null));
             }
         }
-
-        return possibleMoves;
+        return posMoves;
     }
-
-    private Collection<ChessMove> rMoves(ChessBoard currentBoard, ChessPosition currentPosition){
-        int currentRow=currentPosition.getRow();
-        int currentCol=currentPosition.getColumn();
-        return rowColCheck(currentBoard, currentPosition, currentRow, currentCol);
-    }
-
-
-    private Collection<ChessMove> pMoves(ChessBoard currentBoard, ChessPosition currentPosition) {
-        int currentRow = currentPosition.getRow();
-        int currentCol = currentPosition.getColumn();
-        Collection<ChessMove> possibleMoves = new HashSet<>();
-        Collection<ChessPosition> possiblePositions = new HashSet<>();
-                if (currentBoard.getPiece(currentPosition).pieceColor == ChessGame.TeamColor.WHITE) {
-            if (currentRow < 8) {
-                ChessPosition above = new ChessPosition(currentRow + 1, currentCol);
-                if (currentBoard.getPiece(above) == null) {
-                    possiblePositions.add(above);
-                    ChessPosition twoAbove = new ChessPosition(currentRow + 2, currentCol);
-                    if (currentRow == 2 && currentBoard.getPiece(twoAbove) == null) {
-                        possiblePositions.add(twoAbove);
+    private Collection<ChessMove> pMoves(ChessBoard currBoard, ChessPosition thisPos) {
+        int thisRow= thisPos.getRow();
+        int thisCol= thisPos.getColumn();
+        Collection<ChessPosition> posPostns= new HashSet<>();
+        Collection<ChessMove> posMoves= new HashSet<>();
+        if (currBoard.getPiece(thisPos).pieceColor == ChessGame.TeamColor.WHITE) {
+            if (thisRow < 8) {
+                ChessPosition onTop = new ChessPosition(thisRow + 1, thisCol);
+                if (currBoard.getPiece(onTop) == null) {
+                    posPostns.add(onTop);
+                    ChessPosition twoUp= new ChessPosition(thisRow + 2, thisCol);
+                    if (thisRow == 2 && currBoard.getPiece(twoUp) == null) {
+                        posPostns.add(twoUp);
                     }
                 }
             }
-            if (currentRow < 8 && currentCol > 1){
-                ChessPosition upLeft = new ChessPosition(currentRow + 1, currentCol - 1);
-                if (currentBoard.getPiece(upLeft) != null && currentBoard.getPiece(upLeft).pieceColor != this.pieceColor) {
-                    possiblePositions.add(upLeft);
+            if (thisRow < 8 && thisCol > 1) {
+                ChessPosition leftUp= new ChessPosition(thisRow + 1, thisCol - 1);
+                if (currBoard.getPiece(leftUp) != null && currBoard.getPiece(leftUp).pieceColor != this.pieceColor) {
+                    posPostns.add(leftUp);
                 }
             }
-            if (currentRow < 8 && currentCol < 8) {
-                ChessPosition upRight = new ChessPosition(currentRow + 1, currentCol + 1);
-                if (currentBoard.getPiece(upRight) != null && currentBoard.getPiece(upRight).pieceColor != this.pieceColor) {
-                    possiblePositions.add(upRight);
+            if (thisRow < 8 && thisCol < 8) {
+                ChessPosition arribaDer= new ChessPosition(thisRow + 1, thisCol + 1);
+                if (currBoard.getPiece(arribaDer) != null && currBoard.getPiece(rightUp).pieceColor != this.pieceColor) {
+                    posPostns.add(arribaDer);
                 }
             }
         }
-        else if (currentBoard.getPiece(currentPosition).pieceColor == ChessGame.TeamColor.BLACK) {
-            if (currentRow > 1) {
-                ChessPosition below=new ChessPosition(currentRow - 1, currentCol);
-                if (currentBoard.getPiece(below) == null) {
-                    possiblePositions.add(below);
-                    ChessPosition twoBelow=new ChessPosition(currentRow - 2, currentCol);
-                    if (currentRow == 7 && currentBoard.getPiece(twoBelow) == null) {
-                        possiblePositions.add(twoBelow);
+        else if (currBoard.getPiece(thisPos).pieceColor == ChessGame.TeamColor.BLACK) {
+            if (thisRow > 1) {
+                ChessPosition bot= new ChessPosition(thisRow - 1, thisCol);
+                if (currBoard.getPiece(bot) == null) {
+                    posPostns.add(bot);
+                    ChessPosition twoBelow = new ChessPosition(thisRow - 2, thisCol);
+                    if (thisRow == 7 && currBoard.getPiece(twoBelow) == null) {
+                        posPostns.add(twoBelow);
                     }
                 }
             }
-            if (currentRow > 1 && currentCol > 1) {
-                ChessPosition downLeft = new ChessPosition(currentRow - 1, currentCol - 1);
-                if (currentBoard.getPiece(downLeft) != null && currentBoard.getPiece(downLeft).pieceColor != this.pieceColor) {
-                    possiblePositions.add(downLeft);
+            if (thisRow > 1 && thisCol > 1) {
+                ChessPosition abajoIz = new ChessPosition(thisRow - 1, thisCol - 1);
+                if (currBoard.getPiece(abajoIz) != null && currBoard.getPiece(leftDown).pieceColor != this.pieceColor) {
+                    posPostns.add(abajoIz);
                 }
             }
-            if (currentRow > 1 && currentCol < 8) {
-                ChessPosition downRight = new ChessPosition(currentRow - 1, currentCol + 1);
-                if (currentBoard.getPiece(downRight) != null && currentBoard.getPiece(downRight).pieceColor != this.pieceColor) {
-                    possiblePositions.add(downRight);
-                }
-            }
-        }
-        for (ChessPosition pos: possiblePositions) {
-            if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() < 1 || pos.getColumn() > 8) {
-                continue;
-            }
-            if (currentBoard.getPiece(pos) != null && currentBoard.getPiece(pos).pieceColor == this.pieceColor) {
-                continue;
-            }
-            else{
-                if ((currentPosition.getRow() == 7 && pos.getRow() == 8) || (currentPosition.getRow() == 2 && pos.getRow() == 1)) {
-                    possibleMoves.add(new ChessMove(currentPosition, pos, PieceType.QUEEN));
-                    possibleMoves.add(new ChessMove(currentPosition, pos, PieceType.BISHOP));
-                    possibleMoves.add(new ChessMove(currentPosition, pos, PieceType.KNIGHT));
-                    possibleMoves.add(new ChessMove(currentPosition, pos, PieceType.ROOK));
-                }
-                else{
-                    possibleMoves.add(new ChessMove(currentPosition, pos, null));
+            if (thisRow > 1 && thisCol < 8) {
+                ChessPosition downRight = new ChessPosition(thisRow - 1, thisCol + 1);
+                if (currBoard.getPiece(downRight) != null && currBoard.getPiece(downRight).pieceColor != this.pieceColor) {
+                    posPostns.add(downRight);
                 }
             }
         }
-
-        return possibleMoves;
+        for (ChessPosition pos : posPostns) {
+            if (obCheck(pos, currBoard)) {
+                continue;
+            } else {
+                if ((thisPos.getRow() == 7 && pos.getRow() == 8) || (thisPos.getRow() == 2 && pos.getRow() == 1)) {
+                    posMoves.add(new ChessMove(thisPos, pos, PieceType.QUEEN));
+                    posMoves.add(new ChessMove(thisPos, pos, PieceType.BISHOP));
+                    posMoves.add(new ChessMove(thisPos, pos, PieceType.KNIGHT));
+                    posMoves.add(new ChessMove(thisPos, pos, PieceType.ROOK));
+                } else {
+                    posMoves.add(new ChessMove(thisPos, pos, null));
+                }
+            }
+        }
+        return posMoves;
     }
-
-    private Collection<ChessMove> rowColCheck(ChessBoard currentBoard, ChessPosition currentPosition, int currentRow, int currentCol) {
-            Collection<ChessMove> possibleMoves = new HashSet<>();
-            for (int i = currentRow + 1; i <= 8; i++) {
-                ChessPosition possiblePosition = new ChessPosition(i, currentCol);
-                processPotMove(currentBoard, currentPosition, possiblePosition, possibleMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-            for (int i = currentRow - 1; i > 0; i--) {
-                ChessPosition possiblePosition = new ChessPosition(i, currentCol);
-                processPotMove(currentBoard, currentPosition, possiblePosition, possibleMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-            for (int j = currentCol - 1; j > 0; j--) {
-                ChessPosition possiblePosition = new ChessPosition(currentRow, j);
-                processPotMove(currentBoard, currentPosition, possiblePosition, possibleMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-            for (int j = currentCol + 1; j <= 8; j++) {
-                ChessPosition possiblePosition = new ChessPosition(currentRow, j);
-                processPotMove(currentBoard, currentPosition, possiblePosition, possibleMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-            return possibleMoves;
+    private Collection<ChessMove> rMoves(ChessBoard currBoard, ChessPosition thisPos) {
+        int thisRow = thisPos.getRow();
+        int thisCol = thisPos.getColumn();
+        return checkRow(currBoard, thisPos, thisRow, thisCol);
+    }
+    private Collection<ChessMove> checkRow(ChessBoard myBoard, ChessPosition thisPos, int thisRow, int thisCol) {
+        Collection<ChessMove> posMoves= new HashSet<>();
+        for (int i = thisRow + 1; i <= 8; i++) {
+            ChessPosition posPosition = new ChessPosition(i, thisCol);
+            procPotMove(myBoard, thisPos, posPosition, posMoves);
+            if (myBoard.getPiece(posPosition) != null) break;
         }
-
-        private Collection<ChessMove> diagonalCheck(ChessBoard currentBoard, ChessPosition currentPos, int currentRow, int currentCol) {
-            Collection<ChessMove> potentialMoves = new HashSet<>();
-
-            for (int i = currentRow + 1, j = currentCol - 1; i <= 8 && j > 0; i++, j--) {
-                ChessPosition possiblePosition = new ChessPosition(i, j);
-                processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-
-            for (int i = currentRow + 1, j = currentCol + 1; i <= 8 && j <= 8; i++, j++) {
-                ChessPosition possiblePosition = new ChessPosition(i, j);
-                processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-            for (int i = currentRow - 1, j = currentCol - 1; i > 0 && j > 0; i--, j--) {
-                ChessPosition possiblePosition = new ChessPosition(i, j);
-                processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-            for (int i = currentRow - 1, j = currentCol + 1; i > 0 && j <= 8; i--, j++) {
-                ChessPosition possiblePosition = new ChessPosition(i, j);
-                processPotMove(currentBoard, currentPos, possiblePosition, potentialMoves);
-                if (currentBoard.getPiece(possiblePosition) != null) break;
-            }
-
-            return potentialMoves;
+        for (int i = thisRow - 1; i > 0; i--) {
+            ChessPosition posPosition = new ChessPosition(i, thisCol);
+            procPotMove(myBoard, thisPos, posPosition, posMoves);
+            if (myBoard.getPiece(posPosition) != null) break;
         }
-
-        public void processPotMove(ChessBoard myBoard, ChessPosition currPos, ChessPosition potPos, Collection<ChessMove> potentialMoves) {
-            ChessPiece potPiece = myBoard.getPiece(potPos);
-            if (potPiece != null) {
-                if (potPiece.pieceColor != this.pieceColor) {
-                    ChessMove potMove = new ChessMove(currPos, potPos, null);
-                    potentialMoves.add(potMove);
-                }
-                return;
-            }
-
-            ChessMove potMove = new ChessMove(currPos, potPos, null);
-            potentialMoves.add(potMove);
+        for (int j = thisCol - 1; j > 0; j--) {
+            ChessPosition posPosition = new ChessPosition(thisRow, j);
+            procPotMove(myBoard, thisPos, posPosition, posMoves);
+            if (myBoard.getPiece(posPosition) != null) break;
         }
-
-        private boolean obCheck(ChessPosition pos, ChessBoard myBoard) {
-            boolean ob = false;
-            // Remove out of bounds positions
-            if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() < 1 || pos.getColumn() > 8) {
-                ob = true;
-            }
-            // Check if same team's piece is in the way
-            else if (myBoard.getPiece(pos) != null && myBoard.getPiece(pos).pieceColor == this.pieceColor) {
-                ob = true;
-            }
-
-            return ob;
+        for (int j = thisCol + 1; j <= 8; j++) {
+            ChessPosition posPosition = new ChessPosition(thisRow, j);
+            procPotMove(myBoard, thisPos, posPosition, posMoves);
+            if (myBoard.getPiece(posPosition) != null) break;
         }
-
-
+        return posMoves;
+    }
+    private Collection<ChessMove> checkDiagonal(ChessBoard currBoard, ChessPosition thisPos, int thisRow, int thisCol) {
+        Collection<ChessMove> posMoves= new HashSet<>();
+        for (int i=thisRow + 1, j=thisCol - 1; i <= 8 && j > 0; i++, j--) {
+            ChessPosition potentialPosition = new ChessPosition(i, j);
+            procPotMove(currBoard, thisPos, potentialPosition, posMoves);
+            if (currBoard.getPiece(potentialPosition) != null) break;
+        }
+        for (int i=thisRow + 1, j=thisCol + 1; i <= 8 && j <= 8; i++, j++) {
+            ChessPosition posPosition = new ChessPosition(i, j);
+            procPotMove(currBoard, thisPos, posPosition, posMoves);
+            if (currBoard.getPiece(posPosition) != null) break;
+        }
+        for (int i=thisRow - 1, j=thisCol - 1; i > 0 && j > 0; i--, j--) {
+            ChessPosition posPosition = new ChessPosition(i, j);
+            procPotMove(currBoard, thisPos, posPosition, posMoves);
+            if (currBoard.getPiece(posPosition) != null) break;
+        }
+        for (int i=thisRow - 1, j=thisCol + 1; i > 0 && j <= 8; i--, j++) {
+            ChessPosition posPosition = new ChessPosition(i, j);
+            procPotMove(currBoard, thisPos, posPosition, posMoves);
+            if (currBoard.getPiece(posPosition) != null) break;
+        }
+        return posMoves;}
+    public void procPotMove(ChessBoard thisBoard, ChessPosition thisPos, ChessPosition pPos, Collection<ChessMove> potentialMoves) {
+        ChessPiece potPiece = thisBoard.getPiece(pPos);
+        if (potPiece != null) {
+            if (potPiece.pieceColor != this.pieceColor) {
+                ChessMove potMove = new ChessMove(thisPos, pPos, null);
+                potentialMoves.add(potMove);}
+            return;}
+        ChessMove pMove = new ChessMove(thisPos, pPos, null);
+        potentialMoves.add(pMove);}
+    private boolean obCheck(ChessPosition pos, ChessBoard thisBoard) {
+        boolean ob = false;
+        if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() < 1 || pos.getColumn() > 8) {
+            ob = true;}
+        else if (thisBoard.getPiece(pos) != null && thisBoard.getPiece(pos).pieceColor == this.pieceColor) {
+            ob = true;}
+        return ob;}
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceType=" + pieceType +
+                ", pieceColor=" + pieceColor +
+                '}';
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return pieceType == that.pieceType && pieceColor == that.pieceColor;
+    }
     @Override
     public ChessPiece clone() {
         try {
             return (ChessPiece) super.clone();
-        } catch (CloneNotSupportedException ex) {
-            throw new InternalError(ex);
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError(e);
         }
     }
-
-    @Override
-    public boolean equals(Object objetito){
-        if (this == objetito) return true;
-        if(objetito == null || getClass() != objetito.getClass()) return false;
-        ChessPiece ese = (ChessPiece) objetito;
-        return pieceType == ese.pieceType && pieceColor == ese.pieceColor;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(pieceType, pieceColor);
-    }
-
-    @Override
-    public String toString() {
-        return "ChessPiece{" + "pieceType=" + pieceType + ", pieceColor=" + pieceColor + "}";
     }
 }

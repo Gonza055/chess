@@ -1,47 +1,37 @@
 package dataAccess;
-
 import model.GameData;
-
 import java.util.ArrayList;
 import java.util.List;
-
 public class MemoryGameDAO implements GameDAO {
     public List<GameData> gameList = new ArrayList<>();
     public int currentID = 1;
-
     @Override
-    public void updateIndex(){}
+    public void updIndex(){}
     @Override
-    public void createGame(GameData game) {
+    public void crtGame(GameData game) {
         currentID += 1;
         gameList.add(game);
     }
-
     @Override
-    public int getCurrentID() {
+    public int getCurrID() {
         return currentID;
     }
-
     @Override
-    public GameData getGame(int index) {
+    public GameData gameGet(int index) {
         return gameList.get(index);
     }
-
     @Override
-    public void setGame(int index, GameData game) {
+    public void gameSet(int index, GameData game) {
         gameList.set(index, game);
     }
-
     @Override
-    public int getSize() {
+    public int sizeGet() {
         return gameList.size();
     }
-
     @Override
-    public void clearGameList() {
+    public void clearGList() {
         gameList.clear();
     }
-
     @Override
     public List<GameData> returnGameList() {
         return gameList;

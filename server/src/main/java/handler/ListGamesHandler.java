@@ -1,22 +1,19 @@
 package handler;
-
-import com.google.gson.Gson;
-import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.GameDAO;
-import response.ListGamesResponse;
-import service.GameService;
 import spark.Request;
 import spark.Response;
-
+import dataAccess.DataAccessException;
+import dataAccess.GameDAO;
+import com.google.gson.Gson;
+import dataAccess.AuthDAO;
+import response.ListGamesResponse;
+import service.GameService;
 public class ListGamesHandler {
-
-    public Object handle(Request request, Response response, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
+    public Object handle(Request req, Response res, AuthDAO authO, GameDAO gameO) throws DataAccessException {
         Gson myGson = new Gson();
-        String authToken = request.headers("authorization");
-        GameService myGameService = new GameService();
-        ListGamesResponse myListGamesResponse = myGameService.listGamesRespond(authToken, authObj, gameObj);
-        response.status(myListGamesResponse.status);
+        String authToken = req.headers("authorization");
+        GameService service= new GameService();
+        ListGamesResponse myListGamesResponse = service.listGamesRespond(authToken, authO, gameO);
+        res.status(myListGamesResponse.status);
         return myGson.toJson(myListGamesResponse);
     }
 }
