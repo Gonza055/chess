@@ -9,7 +9,7 @@ import java.util.Collection;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public abstract class ChessPiece {
+public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType pieceType;
@@ -52,5 +52,7 @@ public abstract class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public abstract Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition);
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition){
+        //not implemented
+    };
 }
