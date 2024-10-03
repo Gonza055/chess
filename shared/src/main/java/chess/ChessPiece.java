@@ -1,7 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Represents a single chess piece
@@ -53,6 +52,21 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition){
-        //not implemented
+        switch (pieceType) {
+            case KING:
+                return new HashSet<>(Calculator.king(board, myPosition, pieceColor));
+            case QUEEN:
+                return new HashSet<>(Calculator.queen(board, myPosition, pieceColor));
+            case BISHOP:
+                return new HashSet<>(Calculator.bishop(board, myPosition, pieceColor));
+            case KNIGHT:
+                return new HashSet<>(Calculator.knight(board, myPosition, pieceColor));
+            case ROOK:
+                return new HashSet<>(Calculator.rook(board, myPosition, pieceColor));
+            case PAWN:
+                return new HashSet<>(Calculator.pawn(board, myPosition, pieceColor));
+            default:
+                throw new IllegalArgumentException("Invalid Piece Type: " + pieceType);
+        }
     };
 }

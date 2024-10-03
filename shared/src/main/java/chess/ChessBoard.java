@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.Arrays;
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -36,6 +37,24 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        for (int i=0; i < 8; i++) {
+            tablero[6][i]=new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+            tablero[1][i]=new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        }
+
+        ChessGame.TeamColor[] colors={ChessGame.TeamColor.BLACK, ChessGame.TeamColor.WHITE};
+        int[] startRows={7, 0};
+
+        for (int row : startRows) {
+            ChessGame.TeamColor color=colors[row == 7 ? 0 : 1];
+            tablero[row][0]=new ChessPiece(color, ChessPiece.PieceType.ROOK);
+            tablero[row][1]=new ChessPiece(color, ChessPiece.PieceType.KNIGHT);
+            tablero[row][2]=new ChessPiece(color, ChessPiece.PieceType.BISHOP);
+            tablero[row][3]=new ChessPiece(color, ChessPiece.PieceType.QUEEN);
+            tablero[row][4]=new ChessPiece(color, ChessPiece.PieceType.KING);
+            tablero[row][5]=new ChessPiece(color, ChessPiece.PieceType.BISHOP);
+            tablero[row][6]=new ChessPiece(color, ChessPiece.PieceType.KNIGHT);
+            tablero[row][7]=new ChessPiece(color, ChessPiece.PieceType.ROOK);
+        }
     }
 }
