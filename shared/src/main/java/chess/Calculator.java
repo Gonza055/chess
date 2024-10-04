@@ -59,6 +59,16 @@ public class Calculator {
     return possibleMoves;
   }
 
+  public static List<ChessMove> pawn(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor) {
+    List<ChessMove> possibleMoves = new ArrayList<>();
+    int rowChange = (teamColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
+    boolean initialAdvance = (teamColor == ChessGame.TeamColor.WHITE && currentPosition.getRow() == 2)
+            || (teamColor == ChessGame.TeamColor.BLACK && currentPosition.getRow() == 7);
+    moveForward(board, currentPosition, teamColor, possibleMoves, rowChange, initialAdvance);
+    captureDiagonals(board, currentPosition, teamColor, possibleMoves, rowChange);
+    return possibleMoves;
+  }
+
   private static void addMovesInDirection(int rowInc, int colInc, ChessPosition currentPosition, ChessBoard board, List<ChessMove> moves, ChessGame.TeamColor teamColor) {
     int row = currentPosition.getRow() + rowInc;
     int col = currentPosition.getColumn() + colInc;
@@ -93,4 +103,53 @@ public class Calculator {
     }
   }
 
+  private static void moveForward(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor, List<ChessMove> moves, int rowChange, boolean initialAdvance) {
+    int newRow = currentPosition.getRow() + rowChange;
+    if (newRow >= 1 && newRow <= 8) {
+      ChessPosition oneStep = new ChessPosition(newRow, currentPosition.getColumn());
+      if (board.getPiece(oneStep) == null) {
+        if (oneStep.getRow() == 1 || oneStep.getRow() == 8) {
+          promotePawn(currentPosition, moves, oneStep);
+        } else {
+          moves.add(new ChessMove(currentPosition, oneStep, null));
+          if (initialAdvance) {
+            int twoStepRow = oneStep.getRow() + rowChange;
+            if (twoStepRow >= 1 && twoStepRow <= 8) {
+              ChessPosition twoStep = new ChessPosition(twoStepRow, oneStep.getColumn());
+              if (board.getPiece(twoStep) == null) {
+                moves.add(new ChessMove(currentPosition, twoStep, null));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static void captureDiagonals(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor, List<ChessMove> moves, int rowChange) {
+    ChessPosition[] attacks = {
+            new ChessPosition(currentPosition.getRow() + rowChange, currentPosition.getColumn() - 1),
+            new ChessPosition(currentPosition.getRow() + rowChange, currentPosition.getColumn() + 1)
+    };
+
+    for (ChessPosition attackPos : attacks) {
+      if (attackPos.getRow() >= 1 && attackPos.getRow() <= 8 && attackPos.getColumn() >= 1 && attackPos.getColumn() <= 8) {
+        ChessPiece piece = board.getPiece(attackPos);
+        if (piece != null && piece.getTeamColor() != teamColor) {
+          if (attackPos.getRow() == 1 || attackPos.getRow() == 8) {
+            promotePawn(currentPosition, moves, attackPos);
+          } else {
+            moves.add(new ChessMove(currentPosition, attackPos, null));
+          }
+        }
+      }
+    }
+  }
+
+  private static void promotePawn(ChessPosition currentPosition, List<ChessMove> moves, ChessPosition newPosition) {
+    moves.add(new ChessMove(currentPosition, newPosition, ChessPiece.PieceType.QUEEN));
+    moves.add(new ChessMove(currentPosition, newPosition, ChessPiece.PieceType.ROOK));
+    moves.add(new ChessMove(currentPosition, newPosition, ChessPiece.PieceType.BISHOP));
+    moves.add(new ChessMove(currentPosition, newPosition, ChessPiece.PieceType.KNIGHT));
+  }
 }
