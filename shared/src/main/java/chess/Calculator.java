@@ -48,6 +48,17 @@ public class Calculator {
     return possibleMoves;
   }
 
+  public static List<ChessMove> knight(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor) {
+    List<ChessMove> possibleMoves = new ArrayList<>();
+    int[][] knightJumps = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
+
+    for (int[] jump : knightJumps) {
+      addIfValidMove(board, currentPosition, teamColor, possibleMoves, jump[0], jump[1]);
+    }
+
+    return possibleMoves;
+  }
+
   private static void addMovesInDirection(int rowInc, int colInc, ChessPosition currentPosition, ChessBoard board, List<ChessMove> moves, ChessGame.TeamColor teamColor) {
     int row = currentPosition.getRow() + rowInc;
     int col = currentPosition.getColumn() + colInc;
