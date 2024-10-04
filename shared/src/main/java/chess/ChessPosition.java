@@ -32,6 +32,10 @@ public class ChessPosition {
         return col;
     }
 
+    public ChessPosition offset(int rowOffset, int colOffset) {
+        return new ChessPosition(this.row + rowOffset, this.col + colOffset);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

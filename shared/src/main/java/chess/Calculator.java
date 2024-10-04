@@ -33,6 +33,21 @@ public class Calculator {
     return queenMoves;
   }
 
+  public static List<ChessMove> king(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor) {
+    List<ChessMove> possibleMoves = new ArrayList<>();
+    int[] moveOffsets = {-1, 0, 1};
+
+    for (int rowOffset : moveOffsets) {
+      for (int colOffset : moveOffsets) {
+        if (rowOffset != 0 || colOffset != 0) {
+          addIfValidMove(board, currentPosition, teamColor, possibleMoves, rowOffset, colOffset);
+        }
+      }
+    }
+
+    return possibleMoves;
+  }
+
   private static void addMovesInDirection(int rowInc, int colInc, ChessPosition currentPosition, ChessBoard board, List<ChessMove> moves, ChessGame.TeamColor teamColor) {
     int row = currentPosition.getRow() + rowInc;
     int col = currentPosition.getColumn() + colInc;
