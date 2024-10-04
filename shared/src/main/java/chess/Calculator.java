@@ -1,8 +1,37 @@
 package chess;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class Calculator {
+
+  public static List<ChessMove> bishop(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor) {
+    List<ChessMove> possibleMoves = new ArrayList<>();
+
+    addMovesInDirection(1, 1, currentPosition, board, possibleMoves, teamColor);
+    addMovesInDirection(1, -1, currentPosition, board, possibleMoves, teamColor);
+    addMovesInDirection(-1, -1, currentPosition, board, possibleMoves, teamColor);
+    addMovesInDirection(-1, 1, currentPosition, board, possibleMoves, teamColor);
+
+    return possibleMoves;
+  }
+
+  public static List<ChessMove> rook(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor) {
+    List<ChessMove> possibleMoves = new ArrayList<>();
+
+    addMovesInDirection(1, 0, currentPosition, board, possibleMoves, teamColor);
+    addMovesInDirection(-1, 0, currentPosition, board, possibleMoves, teamColor);
+    addMovesInDirection(0, 1, currentPosition, board, possibleMoves, teamColor);
+    addMovesInDirection(0, -1, currentPosition, board, possibleMoves, teamColor);
+
+    return possibleMoves;
+  }
+
+  public static List<ChessMove> queen(ChessBoard board, ChessPosition currentPosition, ChessGame.TeamColor teamColor) {
+    List<ChessMove> queenMoves = new ArrayList<>(bishop(board, currentPosition, teamColor));
+    queenMoves.addAll(rook(board, currentPosition, teamColor));
+    return queenMoves;
+  }
 
   private static void addMovesInDirection(int rowInc, int colInc, ChessPosition currentPosition, ChessBoard board, List<ChessMove> moves, ChessGame.TeamColor teamColor) {
     int row = currentPosition.getRow() + rowInc;
@@ -37,7 +66,5 @@ public class Calculator {
       }
     }
   }
-
-
 
 }
