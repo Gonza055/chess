@@ -68,5 +68,34 @@ public class ChessPiece {
             default:
                 throw new IllegalArgumentException("Invalid Piece Type: " + pieceType);
         }
-    };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece other = (ChessPiece) o;
+        if (this.pieceColor != other.pieceColor) {
+            return false;
+        }
+        if (this.pieceType != other.pieceType) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + (pieceColor != null ? pieceColor.hashCode() : 0);
+        result = 31 * result + (pieceType != null ? pieceType.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "{" + pieceType + '}';
+    }
+
 }

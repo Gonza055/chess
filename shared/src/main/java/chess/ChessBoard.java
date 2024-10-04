@@ -57,4 +57,24 @@ public class ChessBoard {
             tablero[row][7]=new ChessPiece(color, ChessPiece.PieceType.ROOK);
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChessBoard that)) return false;
+
+        return Arrays.deepEquals(this.tablero, that.tablero);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(tablero);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "boardArray=" + Arrays.deepToString(tablero) +
+                '}';
+    }
 }
