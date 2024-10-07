@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.ArrayList;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -50,7 +51,38 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        }
+
+        Collection<ChessMove> possibleMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        for (ChessMove move : possibleMoves) {
+            ChessPiece capturedPiece = doTempMove(startPosition, move.getEndPosition());
+
+            if (!isInCheck(piece.getTeamColor())) {
+                validMoves.add(move);
+            }
+            undoTempMove(startPosition, move.getEndPosition(), capturedPiece);
+        }
+
+        return validMoves;
+    }
+
+    private ChessPiece doTempMove(ChessPosition start, ChessPosition end) {
+        ChessPiece movingPiece = board.getPiece(start);
+        ChessPiece capturedPiece = board.getPiece(end);
+        board.addPiece(end, movingPiece);
+        board.addPiece(start, null);
+        return capturedPiece;
+    }
+
+    private void undoTempMove(ChessPosition start, ChessPosition end, ChessPiece capturedPiece) {
+        ChessPiece movingPiece = board.getPiece(end);
+        board.addPiece(start, movingPiece);
+        board.addPiece(end, capturedPiece);
     }
 
     /**
@@ -93,6 +125,7 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
     }
+
 
     /**
      * Sets this game's chessboard with a given board
