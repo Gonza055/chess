@@ -92,8 +92,36 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition start = move.getStartPosition();
+        ChessPiece piece = board.getPiece(start);
+
+        if (piece == null) {
+            throw new InvalidMoveException("No piece at this position.");
+        }
+
+        if (piece.getTeamColor() != teamTurn) {
+            throw new InvalidMoveException("It's not this team's turn.");
+        }
+
+        // Ensure the move is valid
+        if (!validMoves(start).contains(move)) {
+            throw new InvalidMoveException("Invalid move.");
+        }
+
+        ChessPosition end = move.getEndPosition();
+
+        // Handle promotion or regular move
+        ChessPiece newPiece = (move.getPromotionPiece() != null)
+                ? new ChessPiece(piece.getTeamColor(), move.getPromotionPiece())
+                : piece;
+
+        board.addPiece(end, newPiece);
+        board.addPiece(start, null);
+
+        // Switch turn to the other team
+        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
+
 
     /**
      * Determines if the given team is in check
