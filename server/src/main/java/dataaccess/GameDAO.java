@@ -2,61 +2,121 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.GameRecord;
-
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class GameDAO {
 
-  private final Map<Integer, GameRecord> gameRecords;
-  private int gameIdCounter;
+  private List<GameRecord> gameStorage;
+  private int gameCounter;
 
   public GameDAO() {
-    this.gameRecords = new HashMap<>();
-    this.gameIdCounter = 1;
+    initDataStore();
+  }
+
+  private void initDataStore() {
+    if (gameStorage == null) {
+      gameStorage = new ArrayList<>();
+      resetCounter();
+    }
+  }
+
+  private void resetCounter() {
+    gameCounter = 1;
   }
 
   public void deleteGames() {
-    gameRecords.clear();
-    gameIdCounter = 1;
+    if (gameStorage != null && !gameStorage.isEmpty()) {
+      while (!gameStorage.isEmpty()) {
+        gameStorage.remove(0);
+      }
+    }
+    resetCounter();
   }
 
   public int createGame(String gameName) {
-    int id = gameIdCounter++;
-    GameRecord newGame = new GameRecord(id, null, null, gameName, new ChessGame());
-    gameRecords.put(id, newGame);
-    return id;
+    int newGameID = newGameID();
+    ChessGame newChessGame = new ChessGame();
+    GameRecord newGame = newGameRecord(newGameID, gameName, newChessGame);
+    addGame(newGame);
+    return newGameID;
   }
 
-  public void joinGame(int gameID, ChessGame.TeamColor color, String username) {
-    GameRecord game = gameRecords.get(gameID);
-    if (game == null) return;
+  private int newGameID() {
+    return gameCounter++;
+  }
 
-    GameRecord updatedGame;
-    if (color.equals(ChessGame.TeamColor.WHITE)) {
-      updatedGame = new GameRecord(game.gameID(), username, game.bUsername(), game.gameName(), game.game());
-    } else {
-      updatedGame = new GameRecord(game.gameID(), game.wUsername(), username, game.gameName(), game.game());
+  private GameRecord newGameRecord(int id, String name, ChessGame chessGame) {
+    return new GameRecord(id, null, null, name, chessGame);
+  }
+
+  private void addGame(GameRecord game) {
+    boolean added = gameStorage.add(game);
+    if (!added) {
+      throw new RuntimeException("Failed to add game to storage.");
+    }
+  }
+
+  public void joinGame(GameRecord existingGame, ChessGame.TeamColor teamColor, String playerName) {
+    GameRecord updatedGame = null;
+
+    if (teamColor != null) {
+      if (teamColor.equals(ChessGame.TeamColor.WHITE)) {
+        updatedGame = updateGame(existingGame, playerName, existingGame.blackUsername());
+      } else if (teamColor.equals(ChessGame.TeamColor.BLACK)) {
+        updatedGame = updateGame(existingGame, existingGame.whiteUsername(), playerName);
+      }
     }
 
-    gameRecords.put(gameID, updatedGame);
+    if (updatedGame != null) {
+      replaceGame(existingGame, updatedGame);
+    }
+  }
+
+  private GameRecord updateGame(GameRecord oldGame, String whitePlayer, String blackPlayer) {
+    return new GameRecord(oldGame.gameID(), whitePlayer, blackPlayer, oldGame.gameName(), oldGame.game());
+  }
+
+  private void replaceGame(GameRecord oldGame, GameRecord newGame) {
+    removeGame(oldGame);
+    gameStorage.add(newGame);
+  }
+
+  private void removeGame(GameRecord gameToRemove) {
+    for (int i = 0; i < gameStorage.size(); i++) {
+      if (gameStorage.get(i).gameID() == gameToRemove.gameID()) {
+        gameStorage.remove(i);
+        break;
+      }
+    }
   }
 
   public GameRecord findGame(String gameName) {
-    return gameRecords.values().stream()
-            .filter(game -> game.gameName().equals(gameName))
-            .findFirst()
-            .orElse(null);
+    if (gameName != null && !gameName.isEmpty()) {
+      for (GameRecord game : gameStorage) {
+        if (game != null && game.gameName().equals(gameName)) {
+          return game;
+        }
+      }
+    }
+    return null;
   }
 
   public GameRecord findGame(int gameID) {
-    return gameRecords.get(gameID);
+    for (GameRecord game : gameStorage) {
+      if (game != null && game.gameID() == gameID) {
+        return game;
+      }
+    }
+    return null;
   }
 
-  public List<GameRecord> getAllGames() {
-    return gameRecords.values().stream().collect(Collectors.toList());
+  public ArrayList<GameRecord> getAllGames() {
+    ArrayList<GameRecord> gameListCopy = new ArrayList<>();
+    for (GameRecord game : gameStorage) {
+      gameListCopy.add(game);
+    }
+    return gameListCopy;
   }
+
 }
-

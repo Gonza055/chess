@@ -1,38 +1,75 @@
 package dataaccess;
 
 import model.AuthRecord;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class AuthDAO {
 
-  private final Map<String, AuthRecord> authRecords;
+  private ArrayList<AuthRecord> recordsContainer;
 
   public AuthDAO() {
-    authRecords = new HashMap<>();
+    initRecords();
   }
 
-  public AuthRecord createAuth(String username) {
-    String token = generateToken();
-    AuthRecord authRecord = new AuthRecord(token, username);
-    authRecords.put(token, authRecord);
-    return authRecord;
+  private void initRecords() {
+    if (recordsContainer == null) {
+      recordsContainer = new ArrayList<>();
+    }
   }
 
-  public AuthRecord getAuthByToken(String authToken) {
-    return authRecords.get(authToken);
+  public AuthRecord newAuth(String username) {
+    AuthRecord auth = null;
+    if (username != null && !username.isEmpty()) {
+      String token = UUID.randomUUID().toString();
+      auth = new AuthRecord(token, username);
+
+      boolean isAdded = addAuthRec(auth);
+      if (!isAdded) {
+        throw new RuntimeException("Failed to add authentication record.");
+      }
+    }
+    return auth;
   }
 
-  public void deleteAuthByToken(String authToken) {
-    authRecords.remove(authToken);
+  private boolean addAuthRec(AuthRecord record) {
+    return recordsContainer.add(record);
   }
 
-  public void clearAuthRecords() {
-    authRecords.clear();
+  public AuthRecord addAuth(String authToken) {
+    if (authToken == null || authToken.isEmpty()) {
+      return null;
+    }
+
+    for (int i = 0; i < recordsContainer.size(); i++) {
+      AuthRecord currentRecord = recordsContainer.get(i);
+      if (currentRecord != null && authToken.equals(currentRecord.authToken())) {
+        return currentRecord;
+      }
+    }
+    return null;
   }
 
-  private String generateToken() {
-    return UUID.randomUUID().toString();
+  public void deleteSingleAuth(String authToken) {
+    if (authToken == null || authToken.isEmpty()) {
+      return;
+    }
+
+    for (int i = 0; i < recordsContainer.size(); i++) {
+      AuthRecord currentRecord = recordsContainer.get(i);
+      if (currentRecord != null && authToken.equals(currentRecord.authToken())) {
+        recordsContainer.remove(i);
+        break;
+      }
+    }
   }
-}
+
+  public void deleteAllAuths() {
+    if (recordsContainer != null && !recordsContainer.isEmpty()) {
+      while (!recordsContainer.isEmpty()) {
+        recordsContainer.remove(0);
+      }
+    }
+
+    initRecords();
+  }
