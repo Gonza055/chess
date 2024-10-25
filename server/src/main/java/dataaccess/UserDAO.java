@@ -1,72 +1,72 @@
 package dataaccess;
 
-import model.user.UserRecord;
+import model.UserRecord;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class UserDAO {
 
-  private ArrayList<UserRecord> userStorage;
+    private ArrayList<UserRecord> userStorage;
 
-  public UserDAO() {
-    initStorage();
-  }
-
-  private void initStorage() {
-    if (userStorage == null) {
-      userStorage = new ArrayList<>();
-    }
-  }
-
-  public UserRecord findUser(String username) {
-    if (username == null || username.isEmpty()) {
-      return null;
+    public UserDAO() {
+        initStorage();
     }
 
-    UserRecord foundUser = null;
-
-    Iterator<UserRecord> iterator = userStorage.iterator();
-    while (iterator.hasNext()) {
-      UserRecord currentUser = iterator.next();
-      if (currentUser != null && currentUser.username().equals(username)) {
-        foundUser = currentUser;
-        break;
-      }
+    private void initStorage() {
+        if (userStorage == null) {
+            userStorage = new ArrayList<>();
+        }
     }
 
-    return foundUser;
-  }
+    public UserRecord findUser(String username) {
+        if (username == null || username.isEmpty()) {
+            return null;
+        }
 
-  public void newUser(UserRecord newUser) {
-    if (newUser != null) {
-      boolean added = addUser(newUser);
-      if (!added) {
-        throw new RuntimeException("Failed to create user.");
-      }
-    } else {
-      throw new IllegalArgumentException("User cannot be null.");
+        UserRecord foundUser = null;
+
+        Iterator<UserRecord> iterator = userStorage.iterator();
+        while (iterator.hasNext()) {
+            UserRecord currentUser = iterator.next();
+            if (currentUser != null && currentUser.username().equals(username)) {
+                foundUser = currentUser;
+                break;
+            }
+        }
+
+        return foundUser;
     }
-  }
 
-  private boolean addUser(UserRecord user) {
-    return userStorage.add(user);
-  }
-
-  public void deleteAllUsers() {
-    if (userStorage != null && !userStorage.isEmpty()) {
-      clearUsers();
-    } else {
-      reinitStorage();
+    public void newUser(UserRecord newUser) {
+        if (newUser != null) {
+            boolean added = addUser(newUser);
+            if (!added) {
+                throw new RuntimeException("Failed to create user.");
+            }
+        } else {
+            throw new IllegalArgumentException("User cannot be null.");
+        }
     }
-  }
 
-  private void clearUsers() {
-    while (!userStorage.isEmpty()) {
-      userStorage.remove(0);
+    private boolean addUser(UserRecord user) {
+        return userStorage.add(user);
     }
-  }
 
-  private void reinitStorage() {
-    userStorage = new ArrayList<>();
-  }
+    public void deleteAllUsers() {
+        if (userStorage != null && !userStorage.isEmpty()) {
+            clearUsers();
+        } else {
+            reinitStorage();
+        }
+    }
+
+    private void clearUsers() {
+        while (!userStorage.isEmpty()) {
+            userStorage.remove(0);
+        }
+    }
+
+    private void reinitStorage() {
+        userStorage = new ArrayList<>();
+    }
 }

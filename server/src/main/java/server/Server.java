@@ -1,50 +1,56 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
-import logic.Exception;
-import service.AuthService;
-import service.GameService;
-import service.UserService;
+
+import model.AuthRecord;
+import model.GameRecord;
+import model.LoginRequest;
+import model.UserRecord;
 import spark.*;
 
-import java.util.HashMap;
+import logic.Service;
+import logic.Exception;
+
+import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 public class Server {
 
-    private final AuthService authService;
-    private final GameService gameService;
-    private final UserService userService;
-    private final Gson gson;
+    private final Service service;
 
     public Server() {
-        this.authService = new AuthService();
-        this.gameService = new GameService();
-        this.userService = new UserService();
-        this.gson = new Gson();
+        this.service = new Service();
     }
 
     public int run(int desiredPort) {
-        Spark.port(desiredPort);
-        Spark.staticFiles.location("web");
-
-        Map<String, BiFunction<Request, Response, Object>> routes = new HashMap<>();
-        routes.put("/model/game", this::listGames);
-        routes.put("/model/game/join", this::joinGame);
-        routes.put("/model/game/create", this::createGame);
-        routes.put("/model/user/register", this::registerUser);
-        routes.put("/session/login", this::loginUser);
-        routes.put("/session/logout", this::logoutUser);
-        routes.put("/db/clear", this::deleteAll);
-
-        routes.forEach((path, handler) -> Spark.post(path, (req, res) -> handleRequest(req, res, handler)));
-
-        Spark.exception(Exception.class, this::exceptionHandler);
+        configureServer(desiredPort);
+        registerRoutes();
+        setupExceptionHandling();
 
         Spark.init();
         Spark.awaitInitialization();
+
         return Spark.port();
+    }
+
+    private void configureServer(int port) {
+        Spark.port(port);
+        Spark.staticFiles.location("web");
+    }
+
+    private void registerRoutes() {
+        Spark.get("/game", (req, res) -> listGames(req, res));
+        Spark.put("/game", (req, res) -> joinGame(req, res));
+        Spark.post("/game", (req, res) -> createGame(req, res));
+        Spark.post("/user", (req, res) -> registerUser(req, res));
+        Spark.post("/session", (req, res) -> loginUser(req, res));
+        Spark.delete("/session", (req, res) -> logoutUser(req, res));
+        Spark.delete("/db", (req, res) -> deleteAll(req, res));
+    }
+
+    private void setupExceptionHandling() {
+        Spark.exception(Exception.class, (ex, req, res) -> handleException(ex, req, res));
     }
 
     public void stop() {
@@ -52,17 +58,58 @@ public class Server {
         Spark.awaitStop();
     }
 
-    private Object handleRequest(Request req, Response res, BiFunction<Request, Response, Object> handler) {
-        try {
-            return handler.apply(req, res);
-        } catch (Exception e) {
-            res.status(e.getStatusCode());
-            return gson.toJson(Map.of("error", e.getMessage()));
-        }
+    private Object joinGame(Request req, Response res) throws Exception {
+        String authToken = req.headers("authorization");
+        JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
+        service.joinGame(authToken, joinRequest.playerColor(), joinRequest.gameID());
+        return "{}";
     }
 
-    private void exceptionHandler(Exception ex, Request req, Response res) {
-        res.status(ex.getStatusCode());
-        res.body(gson.toJson(Map.of("error", ex.getMessage())));
+    private Object loginUser(Request req, Response res) throws Exception {
+        LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
+        AuthRecord authRecord = service.login(loginRequest);
+        return new Gson().toJson(authRecord);
     }
+
+    private Object createGame(Request req, Response res) throws Exception {
+        String authToken = req.headers("authorization");
+        GameName gameRequest = new Gson().fromJson(req.body(), GameName.class);
+        int gameId = service.newGame(authToken, gameRequest.gameName());
+        return new Gson().toJson(Map.of("gameID", gameId));
+    }
+
+    private Object registerUser(Request req, Response res) throws Exception {
+        UserRecord userRequest = new Gson().fromJson(req.body(), UserRecord.class);
+        AuthRecord authRecord = service.register(userRequest);
+        return new Gson().toJson(authRecord);
+    }
+
+    private Object logoutUser(Request req, Response res) throws Exception {
+        String authToken = req.headers("authorization");
+        service.logout(authToken);
+        return "{}";
+    }
+
+    private Object listGames(Request req, Response res) throws Exception {
+        String authToken = req.headers("authorization");
+        List<GameRecord> games = service.listGames(authToken);
+        return new Gson().toJson(Map.of("games", games));
+    }
+
+    private Object deleteAll(Request req, Response res) {
+        res.status(200);
+        service.deleteDB();
+        return "{}";
+    }
+
+    private void handleException(Exception ex, Request req, Response res) {
+        res.status(ex.statusCode());
+        res.body(new Gson().toJson(new ErrorMessage(ex.getMessage())));
+    }
+
+    private record ErrorMessage(String message) {}
+
+    private record JoinRequest(ChessGame.TeamColor playerColor, int gameID) {}
+
+    private record GameName(String gameName) {}
 }
