@@ -6,10 +6,10 @@ import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 
-import model.AuthRecord;
-import model.GameRecord;
-import model.LoginRequest;
-import model.UserRecord;
+import model.auth.AuthRecord;
+import model.game.GameRecord;
+import model.auth.LoginRequest;
+import model.user.UserRecord;
 
 import java.util.ArrayList;
 

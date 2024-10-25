@@ -1,6 +1,6 @@
 package dataaccess;
 
-import model.UserRecord;
+import model.user.UserRecord;
 import java.util.ArrayList;
 import java.util.Iterator;
 

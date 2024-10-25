@@ -30,10 +30,10 @@ public class Server {
         Spark.staticFiles.location("web");
 
         Map<String, BiFunction<Request, Response, Object>> routes = new HashMap<>();
-        routes.put("/game", this::listGames);
-        routes.put("/game/join", this::joinGame);
-        routes.put("/game/create", this::createGame);
-        routes.put("/user/register", this::registerUser);
+        routes.put("/model/game", this::listGames);
+        routes.put("/model/game/join", this::joinGame);
+        routes.put("/model/game/create", this::createGame);
+        routes.put("/model/user/register", this::registerUser);
         routes.put("/session/login", this::loginUser);
         routes.put("/session/logout", this::logoutUser);
         routes.put("/db/clear", this::deleteAll);
