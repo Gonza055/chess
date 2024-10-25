@@ -25,7 +25,7 @@ public class GameDAO {
     gameCounter = 1;
   }
 
-  public void deleteGames() {
+  public void deleteAllGames() {
     if (gameStorage != null && !gameStorage.isEmpty()) {
       while (!gameStorage.isEmpty()) {
         gameStorage.remove(0);
@@ -34,7 +34,7 @@ public class GameDAO {
     resetCounter();
   }
 
-  public int createGame(String gameName) {
+  public int newGame(String gameName) {
     int newGameID = newGameID();
     ChessGame newChessGame = new ChessGame();
     GameRecord newGame = newGameRecord(newGameID, gameName, newChessGame);
@@ -62,9 +62,9 @@ public class GameDAO {
 
     if (teamColor != null) {
       if (teamColor.equals(ChessGame.TeamColor.WHITE)) {
-        updatedGame = updateGame(existingGame, playerName, existingGame.blackUsername());
+        updatedGame = updateGame(existingGame, playerName, existingGame.bUsername());
       } else if (teamColor.equals(ChessGame.TeamColor.BLACK)) {
-        updatedGame = updateGame(existingGame, existingGame.whiteUsername(), playerName);
+        updatedGame = updateGame(existingGame, existingGame.wUsername(), playerName);
       }
     }
 

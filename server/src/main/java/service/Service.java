@@ -1,125 +1,166 @@
-package service;
+package logic;
 
 import chess.ChessGame;
+
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
-import exception.ResponseException;
+
 import model.AuthRecord;
 import model.GameRecord;
 import model.LoginRequest;
 import model.UserRecord;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class Service {
 
-  private AuthDAO authDAO;
-  private GameDAO gameDAO;
-  private UserDAO userDAO;
+  private AuthDAO authenticationDataStore;
+  private GameDAO gameDataStore;
+  private UserDAO userDataStore;
 
   public Service() {
-    this.authDAO = new AuthDAO();  // HashMap-based DAOs
-    this.gameDAO = new GameDAO();  // HashMap-based DAOs
-    this.userDAO = new UserDAO();  // HashMap-based DAOs
+    this.authenticationDataStore = new AuthDAO();
+    this.gameDataStore = new GameDAO();
+    this.userDataStore = new UserDAO();
   }
 
-  public AuthRecord registerUser(UserRecord user) throws ResponseException {
-    // Ensure user has all required fields (accessing username and password through info())
-    if (user.info().password() == null || user.info().username() == null || user.email() == null) {
-      throw new ResponseException("Error: bad request", 400);
+  public AuthRecord register(UserRecord user) throws Exception {
+    if (isUserIncomplete(user)) {
+      handleInvalidUser();
     }
 
-    // Check if user already exists
-    UserRecord existingUser = this.userDAO.findUser(user.info().username());
-    if (existingUser != null) {
-      throw new ResponseException("Error: already taken", 403);
+    if (userAlreadyExists(user.username())) {
+      handleUserAlreadyExists();
     }
 
-    // Create the user and authenticate
-    this.userDAO.createUser(user);
-    return this.authDAO.newAuth(user.info().username());
+    this.userDataStore.newUser(user);
+    return this.authenticationDataStore.newAuth(user.username());
   }
 
-  public AuthRecord loginUser(LoginRequest login) throws ResponseException {
-    // Verify user credentials (accessing username and password through info())
-    UserRecord userRecord = this.userDAO.findUser(login.username());
-    if (userRecord == null || !userRecord.info().password().equals(login.password())) {
-      throw new ResponseException("Error: unauthorized", 401);
-    }
-
-    // Create and return a new auth token
-    return this.authDAO.newAuth(login.username());
+  private boolean isUserIncomplete(UserRecord user) {
+    return user == null || user.username() == null || user.password() == null || user.email() == null;
   }
 
-  public AuthRecord verifyUser(String authToken) throws ResponseException {
-    if (authToken == null) {
-      throw new ResponseException("Error: unauthorized", 401);
-    }
-
-    AuthRecord authRecord = this.authDAO.getAuth(authToken);
-    if (authRecord == null) {
-      throw new ResponseException("Error: unauthorized", 401);
-    }
-
-    return authRecord;
+  private void handleInvalidUser() throws Exception {
+    throw new Exception("Error: invalid user", 400);
   }
 
-  public void joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) throws ResponseException {
-    AuthRecord user = this.verifyUser(authToken);
+  private boolean userAlreadyExists(String username) {
+    return this.userDataStore.findUser(username) != null;
+  }
 
-    // Validate the player's color selection
-    if (playerColor == null || (!playerColor.equals(ChessGame.TeamColor.WHITE) && !playerColor.equals(ChessGame.TeamColor.BLACK))) {
-      throw new ResponseException("Error: bad request", 400);
+  private void handleUserAlreadyExists() throws Exception {
+    throw new Exception("Error: user already exists", 403);
+  }
+
+  public AuthRecord login(LoginRequest request) throws Exception {
+    if (isLoginRequestInvalid(request)) {
+      throw new Exception("Error: invalid login request", 400);
     }
 
-    // Retrieve the game
-    GameRecord game = this.gameDAO.findGame(gameID);
+    UserRecord userRecord = findUserInDataStore(request.username());
+    if (isLoginUnauthorized(userRecord, request.password())) {
+      throw new Exception("Error: unauthorized", 401);
+    }
+
+    return this.authenticationDataStore.newAuth(request.username());
+  }
+
+  private boolean isLoginRequestInvalid(LoginRequest request) {
+    return request == null || request.username() == null || request.password() == null;
+  }
+
+  private UserRecord findUserInDataStore(String username) {
+    return this.userDataStore.findUser(username);
+  }
+
+  private boolean isLoginUnauthorized(UserRecord user, String password) {
+    return user == null || !user.password().equals(password);
+  }
+
+  public AuthRecord verify(String authToken) throws Exception {
+    if (isTokenInvalid(authToken)) {
+      throw new Exception("Error: invalid token", 401);
+    }
+
+    AuthRecord user = findAuthRecord(authToken);
+    if (user == null) {
+      throw new Exception("Error: unauthorized", 401);
+    }
+    return user;
+  }
+
+  private boolean isTokenInvalid(String authToken) {
+    return authToken == null || authToken.isEmpty();
+  }
+
+  private AuthRecord findAuthRecord(String authToken) {
+    return this.authenticationDataStore.addAuth(authToken);
+  }
+
+  public void joinGame(String authToken, ChessGame.TeamColor playerColor, int gameID) throws Exception {
+    AuthRecord user = verify(authToken);
+
+    if (isInvalidTeamColor(playerColor)) {
+      throw new Exception("Error: invalid team color", 400);
+    }
+
+    GameRecord game = lookGameById(gameID);
     if (game == null) {
-      throw new ResponseException("Error: bad request", 400);
+      throw new Exception("Error: game not found", 400);
     }
 
-    // Check if the color is already taken
-    if (playerColor.equals(ChessGame.TeamColor.WHITE)) {
-      if (game.whiteUsername() != null) {
-        throw new ResponseException("Error: already taken", 403);
-      }
+    if (isTeamColorAlreadyTaken(game, playerColor)) {
+      throw new Exception("Error: team color already taken", 403);
+    }
+
+    this.gameDataStore.joinGame(game, playerColor, user.username());
+  }
+
+  private boolean isInvalidTeamColor(ChessGame.TeamColor color) {
+    return color == null || (!color.equals(ChessGame.TeamColor.WHITE) && !color.equals(ChessGame.TeamColor.BLACK));
+  }
+
+  private GameRecord lookGameById(int gameID) {
+    return this.gameDataStore.findGame(gameID);
+  }
+
+  private boolean isTeamColorAlreadyTaken(GameRecord game, ChessGame.TeamColor color) {
+    if (color.equals(ChessGame.TeamColor.WHITE)) {
+      return game.wUsername() != null;
     } else {
-      if (game.blackUsername() != null) {
-        throw new ResponseException("Error: already taken", 403);
-      }
+      return game.bUsername() != null;
+    }
+  }
+
+  public int newGame(String authToken, String gameName) throws Exception {
+    verify(authToken);
+
+    if (gameNameAlreadyExist(gameName)) {
+      throw new Exception("Error: game name already exists", 400);
     }
 
-    // Join the game
-    this.gameDAO.joinGame(gameID, playerColor, user.username());
+    return this.gameDataStore.newGame(gameName);
   }
 
-  public int createGame(String authToken, String gameName) throws ResponseException {
-    this.verifyUser(authToken);
-
-    // Check if the game name already exists
-    if (this.gameDAO.findGame(gameName) != null) {
-      throw new ResponseException("Error: bad request", 400);
-    }
-
-    // Create the game and return the game ID
-    return this.gameDAO.createGame(gameName);
+  private boolean gameNameAlreadyExist(String gameName) {
+    return this.gameDataStore.findGame(gameName) != null;
   }
 
-  public void logoutUser(String authToken) throws ResponseException {
-    this.verifyUser(authToken);
-    this.authDAO.deleteAuth(authToken);
+  public void logout(String authToken) throws Exception {
+    AuthRecord user = verify(authToken);
+    this.authenticationDataStore.deleteSingleAuth(authToken);
   }
 
-  // Changed to return List<GameRecord> instead of ArrayList<GameRecord> to match the HashMap structure
-  public List<GameRecord> listGames(String authToken) throws ResponseException {
-    this.verifyUser(authToken);
-    return this.gameDAO.getAllGames();  // Assuming GameDAO now returns a List
+  public ArrayList<GameRecord> listGames(String authToken) throws Exception {
+    verify(authToken);
+    return this.gameDataStore.getAllGames();
   }
 
   public void deleteDB() {
-    this.authDAO.deleteAllAuths();
-    this.gameDAO.deleteGames();
-    this.userDAO.deleteUsers();
+    this.authenticationDataStore.deleteAllAuths();
+    this.gameDataStore.deleteAllGames();
+    this.userDataStore.deleteAllUsers();
   }
 }

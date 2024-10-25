@@ -52,7 +52,7 @@ public class UserDAO {
     return userStorage.add(user);
   }
 
-  public void deleteUsers() {
+  public void deleteAllUsers() {
     if (userStorage != null && !userStorage.isEmpty()) {
       clearUsers();
     } else {
