@@ -1,17 +1,17 @@
-package exception;
+package logic;
 
-public class ResponseException extends RuntimeException {
+public class Exception extends RuntimeException {
 
   private final int statusCode;
   private final String errorDetails;
 
-  public ResponseException(String message, int statusCode) {
+  public Exception(String message, int statusCode) {
     super(message);
     this.statusCode = statusCode;
     this.errorDetails = null;
   }
 
-  public ResponseException(String message, int statusCode, String errorDetails) {
+  public Exception(String message, int statusCode, String errorDetails) {
     super(message);
     this.statusCode = statusCode;
     this.errorDetails = errorDetails;

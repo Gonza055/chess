@@ -1,19 +1,13 @@
 package server;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
-import exception.ResponseException;
-import model.AuthRecord;
-import model.GameRecord;
-import model.LoginRequest;
-import model.UserRecord;
+import logic.Exception;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
 import spark.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -46,7 +40,7 @@ public class Server {
 
         routes.forEach((path, handler) -> Spark.post(path, (req, res) -> handleRequest(req, res, handler)));
 
-        Spark.exception(ResponseException.class, this::exceptionHandler);
+        Spark.exception(Exception.class, this::exceptionHandler);
 
         Spark.init();
         Spark.awaitInitialization();
@@ -61,13 +55,13 @@ public class Server {
     private Object handleRequest(Request req, Response res, BiFunction<Request, Response, Object> handler) {
         try {
             return handler.apply(req, res);
-        } catch (ResponseException e) {
+        } catch (Exception e) {
             res.status(e.getStatusCode());
             return gson.toJson(Map.of("error", e.getMessage()));
         }
     }
 
-    private void exceptionHandler(ResponseException ex, Request req, Response res) {
+    private void exceptionHandler(Exception ex, Request req, Response res) {
         res.status(ex.getStatusCode());
         res.body(gson.toJson(Map.of("error", ex.getMessage())));
     }
