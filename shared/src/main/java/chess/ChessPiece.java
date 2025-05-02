@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -52,6 +53,13 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+
+        Collection<ChessMove> moves = new ArrayList<>();
+
+        if (board == null || myPosition == null) {
+            return moves;
+        }
+
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
 
@@ -62,12 +70,26 @@ public class ChessPiece {
                 int start_row = pieceColor == ChessGame.TeamColor.WHITE ? 2 : 7;
 
             case KING:
-                for (int row_offset = 1; row_offset <= 8; row_offset++) {
-                    for (int col_offset = 1; col_offset <= 8; col_offset++) {
+                for (int row_offset = -1; row_offset <= 1; row_offset++) {
+                    for (int col_offset = -1; col_offset <= 1; col_offset++) {
+
+                        if (row_offset == 0 && col_offset == 0) continue;
+
                         int new_row = row + row_offset;
                         int new_col = col + col_offset;
+
+                        if (isValidPosition(new_row, new_col)) {
+                            ChessPosition new_pos = new ChessPosition(new_row, new_col);
+                            ChessPiece targetPiece = board.getPiece(new_pos);
+                            if (targetPiece == null || targetPiece.getTeamColor() != pieceColor) {
+                                moves.add(new ChessMove(myPosition, new_pos, null));
+                            }
+                        }
+
+
                     }
                 }
+                break;
 
 
             case KNIGHT:
