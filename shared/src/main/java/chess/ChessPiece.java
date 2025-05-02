@@ -107,7 +107,16 @@ public class ChessPiece {
                 for (int[] move : knight_moves) {
                     int new_row = row + move[0];
                     int new_col = col + move[1];
+
+                    if (isValidPosition(new_row, new_col)) {
+                        ChessPosition new_pos = new ChessPosition(new_row, new_col);
+                        ChessPiece targetPiece = board.getPiece(new_pos);
+                        if (targetPiece == null || targetPiece.getTeamColor() != pieceColor) {
+                            moves.add(new ChessMove(myPosition, new_pos, null));
+                        }
+                    }
                 }
+                break;
 
             case ROOK:
 
