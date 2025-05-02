@@ -141,6 +141,7 @@ public class ChessPiece {
                 break;
 
 
+
             case KNIGHT:
                 int [][] knight_moves = {
                         {2, 1},
@@ -168,32 +169,64 @@ public class ChessPiece {
                 break;
 
             case ROOK:
+                moves.addAll(getMove(board, myPosition, moves, new int[] {0, 1}, new int[] {1, 0}));
+                moves.addAll(getMove(board, myPosition, moves, new int[] {0,-1}, new int[] {-1, 0}));
+                break;
 
 
 
             case QUEEN:
-                for (int row_offset = 1; row_offset <= 8; row_offset++) {
-                    for (int col_offset = 1; col_offset <= 8; col_offset++) {
-                        int new_row = row + row_offset;
-                        int new_col = col + col_offset;
-                    }
-                }
+                moves.addAll(getMove(board, myPosition, moves, new int[] {0, 1}, new int[] {1, 0}));
+                moves.addAll(getMove(board, myPosition, moves, new int[] {0,-1}, new int[] {-1, 0}));
+                moves.addAll(getMove(board, myPosition, moves, new int[] {1, 1}, new int[] {1, 1}));
+                moves.addAll(getMove(board, myPosition, moves, new int[] {-1, 0}, new int[] {-1, -1}));
+                break;
 
-
+            case BISHOP:
+                moves.addAll(getMove(board, myPosition, moves, new int[] {1, 1}, new int[] {1, 1}));
+                moves.addAll(getMove(board, myPosition, moves, new int[] {-1, 0}, new int[] {-1, -1}));
+                break;
 
         }
-
-
+        return moves;
     }
 
     private boolean isValidPosition(int row, int col) {
         return row >= 0 && row < 8 && col >=0 && col < 8;
     }
 
-    private Collection<ChessMove> getMove(ChessBoard board, ChessPosition myPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
+    private Collection<ChessMove> getMove(ChessBoard board, ChessPosition myPosition, Collection<ChessMove> moves, int[]... directions) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-        for (int [] dir : directions )
-    };
+
+        for (int [] dir : directions){
+            int row_dir = dir[0];
+            int col_dir = dir[1];
+
+            int new_row = row;
+            int new_col = col;
+
+            while (true) {
+                new_row += row_dir;
+                new_col += col_dir;
+
+                if (!isValidPosition(new_row, new_col)) break;
+
+                ChessPosition new_pos = new ChessPosition(new_row, new_col);
+                ChessPiece targetPiece = board.getPiece(new_pos);
+
+                if (targetPiece == null) {
+                    moves.add(new ChessMove(myPosition, new_pos, null));
+                }
+                else
+                {
+                    if (targetPiece.getTeamColor() != pieceColor) {
+                        moves.add(new ChessMove(myPosition, new_pos, null));
+                    }
+                }
+            }
+        }
+        return moves;
+    }
 
 }
