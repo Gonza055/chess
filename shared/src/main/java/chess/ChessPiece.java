@@ -104,7 +104,10 @@ public class ChessPiece {
         }
 
 
+    }
 
+    private boolean isValidPosition(int row, int col) {
+        return row >= 0 && row < 8 && col >=0 && col < 8;
     }
 
     private Collection<ChessMove> getMove(ChessBoard board, ChessPosition myPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
