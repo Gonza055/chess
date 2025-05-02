@@ -69,6 +69,55 @@ public class ChessPiece {
                 int direction = pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
                 int start_row = pieceColor == ChessGame.TeamColor.WHITE ? 2 : 7;
 
+                if (row == start_row && isValidPosition(row + 2 * direction, col)) {
+                    ChessPosition one_step = new ChessPosition(row + direction, col);
+                    ChessPosition two_step = new ChessPosition(row + 2 * direction, col);
+                    if (board.getPiece(one_step) == null && board.getPiece(two_step) == null) {
+                        moves.add(new ChessMove(myPosition, two_step, null));
+                    }
+                }
+
+                if (isValidPosition(row + direction, col)) {
+                    ChessPosition new_pos = new ChessPosition(row + direction, col);
+                    if (board.getPiece(new_pos) == null) {
+                        if (row + direction == (pieceColor == ChessGame.TeamColor.WHITE ? 8 : 1)) {
+                            moves.add(new ChessMove(myPosition, new_pos, ChessPiece.PieceType.QUEEN));
+                            moves.add(new ChessMove(myPosition, new_pos, ChessPiece.PieceType.ROOK));
+                            moves.add(new ChessMove(myPosition, new_pos, ChessPiece.PieceType.BISHOP));
+                            moves.add(new ChessMove(myPosition, new_pos, ChessPiece.PieceType.KNIGHT));
+                        }
+                        else {
+                            moves.add(new ChessMove(myPosition, new_pos, null));
+                        }
+                    }
+
+                }
+
+                for (int col_offset : new int[]{-1, 1}) {
+                    int new_row = row + direction;
+                    int new_col = col + col_offset;
+
+                    if (isValidPosition(new_row, new_col)) {
+                        ChessPosition capture_pos = new ChessPosition(new_row, new_col);
+                        ChessPiece targetPiece = board.getPiece(capture_pos);
+
+
+                        if (targetPiece != null && targetPiece.getTeamColor() != pieceColor) {
+                            if (new_row == (pieceColor == ChessGame.TeamColor.WHITE ? 8 : 1)) {
+                                moves.add(new ChessMove(myPosition, capture_pos, PieceType.QUEEN));
+                                moves.add(new ChessMove(myPosition, capture_pos, PieceType.ROOK));
+                                moves.add(new ChessMove(myPosition, capture_pos, PieceType.BISHOP));
+                                moves.add(new ChessMove(myPosition, capture_pos, PieceType.KNIGHT));
+                            } else {
+                                moves.add(new ChessMove(myPosition, capture_pos, null));
+                            }
+                        }
+                    }
+                }
+
+                break;
+
+
             case KING:
                 for (int row_offset = -1; row_offset <= 1; row_offset++) {
                     for (int col_offset = -1; col_offset <= 1; col_offset++) {
