@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -57,7 +58,36 @@ public class ChessGame {
         if (piece == null) {
             return null;
         }
-        return piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> possibleMoves = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        for (ChessMove move : possibleMoves) {
+            ChessPiece targetPiece = board.getPiece(move.getEndPosition());
+            if (targetPiece != null && targetPiece.getTeamColor() == piece.getTeamColor()) {
+                continue;
+            }
+            ChessPiece pieceToPlace = piece;
+
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
+                pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+            }
+
+            ChessPiece originalTarget = board.getPiece(move.getEndPosition());
+
+            board.addPiece(move.getEndPosition(), pieceToPlace);
+            board.addPiece(startPosition, null);
+
+            boolean inCheck = isInCheck(piece.getTeamColor());
+
+            board.addPiece(startPosition, piece);
+            board.addPiece(move.getEndPosition(), originalTarget);
+
+            if (!inCheck) {
+                validMoves.add(move);
+            }
+
+        }
+        return validMoves;
     }
 
     /**
