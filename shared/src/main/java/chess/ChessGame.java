@@ -113,6 +113,12 @@ public class ChessGame {
             throw new InvalidMoveException("Not your turn");
         }
 
+        ChessPiece targetPiece = board.getPiece(endPosition);
+
+        if (targetPiece != null && targetPiece.getTeamColor() == piece.getTeamColor()){
+            throw new InvalidMoveException("Cannot capture own piece");
+        }
+
         Collection<ChessMove> validMoves = piece.pieceMoves(board, startPosition);
 
         boolean isValidMove = false;
@@ -138,6 +144,12 @@ public class ChessGame {
 
         board.addPiece(endPosition, pieceToPlace);
         board.addPiece(startPosition, null);
+
+        if (isInCheck(piece.getTeamColor())) {
+            board.addPiece(startPosition, piece);
+            board.addPiece(endPosition, targetPiece);
+            throw new InvalidMoveException("Move leaves king in check");
+        }
 
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
