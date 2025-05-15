@@ -118,12 +118,9 @@ public class ChessGame {
         boolean isValidMove = false;
 
         for (ChessMove validMove : validMoves) {
-            if (validMove.getStartPosition().equals(startPosition)
-                    && validMove.getEndPosition().equals(endPosition)
-                    && (validMove.getPromotionPiece() == null && move.getPromotionPiece() == null || (validMove.getPromotionPiece() != null && validMove.getPromotionPiece().equals(move.getPromotionPiece())))) {
+            if (validMove.equals(move)) {
                 isValidMove = true;
                 break;
-
             }
         }
 
@@ -131,17 +128,16 @@ public class ChessGame {
             throw new InvalidMoveException("Invalid move");
         }
 
+        ChessPiece pieceToPlace = piece;
+
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
+            if (piece.getTeamColor() == TeamColor.WHITE && endPosition.getRow() == 8 || piece.getTeamColor() == TeamColor.BLACK && endPosition.getRow() == 1) {
+                pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+            }
+        }
 
         board.addPiece(endPosition, piece);
         board.addPiece(startPosition, null);
-
-        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            if (endPosition.getRow() == 8) {
-                board.addPiece(new ChessPosition(endPosition.getRow() - 1, endPosition.getColumn()), new ChessPiece(TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
-            } else if (endPosition.getRow() == 1) {}
-        }
-
-
 
 
 
