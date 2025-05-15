@@ -285,4 +285,24 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ChessGame other = (ChessGame) o;
+
+        return teamTurn == other.teamTurn && board.equals(other.board);
+
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = teamTurn.hashCode();
+        result = 31 * result + board.hashCode();
+        return result;
+
+    }
 }
