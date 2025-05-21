@@ -3,7 +3,7 @@ import dataaccess.DataAccessException;
 import dataaccess.dataAccess;
 import model.*;
 
-import javax.xml.crypto.Data;
+import service.Results.*;
 import java.util.UUID;
 
 
@@ -28,7 +28,7 @@ public class UserService {
         if (user == null || !user.password().equals(password)) throw new DataAccessException("Invalid Credentials");
         String authToken = UUID.randomUUID().toString();
         dataaccess.createAuth(new AuthData(username, authToken));
-        return RegisterResult(username, authToken);
+        return new RegisterResult(username, authToken);
     }
 
 
