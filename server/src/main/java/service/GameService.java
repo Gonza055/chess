@@ -37,10 +37,12 @@ public class GameService {
         if (user == null) throw new DataAccessException("Invalid user");
         GameData game = dataaccess.getGame(gameID);
         if (game == null) throw new DataAccessException("Invalid game");
-        if ("White".equals(playerColor) && game.whiteUsername() != null) throw new DataAccessException("Player already joined");
-        if ("Black".equals(playerColor) && game.blackUsername() != null) throw new DataAccessException("Player already joined");
+        if ("white".equals(playerColor.toLowerCase()) && game.whiteUsername() != null) throw new DataAccessException("Player already joined");
+        if ("black".equals(playerColor.toLowerCase()) && game.blackUsername() != null) throw new DataAccessException("Player already joined");
 
-        game = new GameData(gameID, "White".equals(playerColor.toLowerCase()) ? username : game.whiteUsername(), "Black".equals(playerColor.toLowerCase()) ? username : game.blackUsername(), game.gameName(), game.game());
+        if (!playerColor.equalsIgnoreCase("white") && !playerColor.equalsIgnoreCase("black")) throw new DataAccessException("Invalid Color");
+
+        game = new GameData(gameID, "white".equals(playerColor.toLowerCase()) ? username : game.whiteUsername(), "black".equals(playerColor.toLowerCase()) ? username : game.blackUsername(), game.gameName(), game.game());
 
         dataaccess.updateGame(gameID, game);
 

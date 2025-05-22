@@ -1,11 +1,10 @@
 package server;
 
-
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import dataaccess.dataAccess;
-import model.GameData;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import service.*;
 import com.google.gson.Gson;
@@ -38,7 +37,7 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         registerEndpoints();
 
-        //This line initializes the server and can be removed once you have a functioning endpoint 
+        //This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
 
         Spark.awaitInitialization();
@@ -139,7 +138,7 @@ public class Server {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
-                if (req.body() == null || req.body().trim().isEmpty()) {
+                if (req.body() == null || req.body().trim().isEmpty()){
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
@@ -185,9 +184,9 @@ public class Server {
                 } else if (e.getMessage().equals("Invalid Game") || e.getMessage().equals("Invalid Color")) {
                     res.status(400);
                     return gson.toJson(new ErrorResponse("Error: Bad request"));
-                } else if (e.getMessage().equals("Game full")) {
+                } else if (e.getMessage().equals("Player already joined")) {
                     res.status(403);
-                    return  gson.toJson(new ErrorResponse("Error: Game full"));
+                    return  gson.toJson(new ErrorResponse("Error: Player already joined"));
                 }
                 res.status(500);
                 return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
