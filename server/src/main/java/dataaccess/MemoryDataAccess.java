@@ -43,7 +43,9 @@ public class MemoryDataAccess implements dataAccess {
 
     @Override
     public GameData[] getAllGames() throws DataAccessException {
-        return games.values().toArray(new GameData[0]);
+        //return games.values().toArray(new GameData[0]);
+        GameData[] gameArray = games.values().stream().filter(game -> game.gameID() != null).toArray(GameData[]::new);
+        return gameArray;
     }
 
     @Override
