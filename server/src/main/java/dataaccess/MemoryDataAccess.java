@@ -55,11 +55,13 @@ public class MemoryDataAccess implements dataAccess {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
+        if (game.gameID() == null) throw new DataAccessException("Game ID must be set");
         games.put(game.gameID(), game);
     }
 
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
+        if (game.gameID() == null) throw new DataAccessException("Game ID must be set");
         games.put(gameID, game);
     }
 
