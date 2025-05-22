@@ -5,6 +5,8 @@ import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import dataaccess.dataAccess;
 import model.GameData;
+import model.AuthData;
+import model.UserData;
 import service.*;
 import com.google.gson.Gson;
 import spark.*;
@@ -127,6 +129,20 @@ public class Server {
                 return gson.toJson(new ErrorResponse("Error: Unauthorized"));
             }
             try {
+                AuthData auth = dataaccess.getAuth(authToken);
+                if (auth == null) {
+                    res.status(401);
+                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+                }
+                UserData user = dataaccess.getUser(auth.username());
+                if (user == null) {
+                    res.status(401);
+                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+                }
+                if (req.body() == null || req.body().trim().isEmpty()) {
+                    res.status(401);
+                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+                }
                 CreateGameRequest request = gson.fromJson(req.body(), CreateGameRequest.class);
                 if (request == null || request.gameName == null) {
                     res.status(400);
