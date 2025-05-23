@@ -242,7 +242,9 @@ public class ChessGame {
      */
     private boolean hasLegalMoveForPiece(TeamColor teamColor, ChessPosition position) {
         ChessPiece piece = board.getPiece(position);
-        if (piece == null || piece.getTeamColor() != teamColor) return false;
+        if (piece == null || piece.getTeamColor() != teamColor) {
+            return false;
+        }
 
         for (ChessMove move : piece.pieceMoves(board, position)) {
             ChessPiece target = board.getPiece(move.getEndPosition());
@@ -265,20 +267,6 @@ public class ChessGame {
         }
         return false;
     }
-
-    private boolean attacksKing(ChessPiece piece, ChessPosition from, ChessPosition kingPosition) {
-        if (piece == null || piece.getTeamColor() != (piece.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE)) {
-            return false;
-        }
-        for (ChessMove move : piece.pieceMoves(board, from)) {
-            if (move.getEndPosition().equals(kingPosition)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
 
     /**
      * Sets this game's chessboard with a given board
