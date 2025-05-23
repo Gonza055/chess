@@ -196,7 +196,7 @@ public class Server {
             }
         });
     }
-    
+
     private void registerDbEndpoints() {
         Spark.delete("/db", (req, res) -> {
             try {

@@ -184,14 +184,15 @@ public class ChessGame {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() == opponentColor) {
-                    Collection<ChessMove> moves = piece.pieceMoves(board, position);
-                    for (ChessMove move : moves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true;
-                        }
+                if (piece == null || piece.getTeamColor() != opponentColor) {
+                    continue;
+                }
+                for (ChessMove move : piece.pieceMoves(board, position)) {
+                    if (move.getEndPosition().equals(kingPosition)) {
+                        return true;
                     }
                 }
+
             }
         }
         return false;
@@ -227,32 +228,56 @@ public class ChessGame {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = piece.pieceMoves(board, position);
-                    for (ChessMove move : moves) {
-                        ChessPiece targetPiece = board.getPiece(move.getEndPosition());
-
-                        ChessPiece pieceToPlace = piece;
-                        if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
-                            pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
-                        }
-                        board.addPiece(move.getEndPosition(), pieceToPlace);
-                        board.addPiece(position, null);
-
-                        boolean inCheck = isInCheck(teamColor);
-
-                        board.addPiece(position, piece);
-                        board.addPiece(move.getEndPosition(), targetPiece);
-
-                        if (!inCheck) {
-                            return false;
-                        }
-                    }
+                if (hasLegalMoveForPiece(teamColor, position)) {
+                    return false;
                 }
             }
         }
         return true;
     }
+
+    /**
+     * Simula todos los movimientos de la pieza en la posición dada
+     * y devuelve true si al menos uno deja al rey fuera de jaque.
+     */
+    private boolean hasLegalMoveForPiece(TeamColor teamColor, ChessPosition position) {
+        ChessPiece piece = board.getPiece(position);
+        if (piece == null || piece.getTeamColor() != teamColor) return false;
+
+        for (ChessMove move : piece.pieceMoves(board, position)) {
+            ChessPiece target = board.getPiece(move.getEndPosition());
+            ChessPiece toPlace = piece;
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
+                toPlace = new ChessPiece(teamColor, move.getPromotionPiece());
+            }
+
+            board.addPiece(move.getEndPosition(), toPlace);
+            board.addPiece(position, null);
+
+            boolean stillInCheck = isInCheck(teamColor);
+
+            board.addPiece(position, piece);
+            board.addPiece(move.getEndPosition(), target);
+
+            if (!stillInCheck) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean attacksKing(ChessPiece piece, ChessPosition from, ChessPosition kingPosition) {
+        if (piece == null || piece.getTeamColor() != (piece.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE)) {
+            return false;
+        }
+        for (ChessMove move : piece.pieceMoves(board, from)) {
+            if (move.getEndPosition().equals(kingPosition)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
 
     /**
