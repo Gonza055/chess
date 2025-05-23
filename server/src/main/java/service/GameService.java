@@ -1,14 +1,14 @@
 package service;
 import dataaccess.DataAccessException;
-import dataaccess.dataAccess;
+import dataaccess.DataAccess;
 import model.*;
 
 import service.Results.*;
 
 public class GameService {
 
-    private final dataAccess dataaccess;
-    public GameService(dataAccess dataaccess) {
+    private final DataAccess dataaccess;
+    public GameService(DataAccess dataaccess) {
         this.dataaccess = dataaccess;
     }
     public GameListResult listGames(String authToken) throws DataAccessException{

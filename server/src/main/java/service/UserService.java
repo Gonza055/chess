@@ -1,6 +1,6 @@
 package service;
 import dataaccess.DataAccessException;
-import dataaccess.dataAccess;
+import dataaccess.DataAccess;
 import model.*;
 
 import service.Results.*;
@@ -8,8 +8,8 @@ import java.util.UUID;
 
 
 public class UserService {
-    private final dataAccess dataaccess;
-    public UserService(dataAccess dataaccess) {
+    private final DataAccess dataaccess;
+    public UserService(DataAccess dataaccess) {
         this.dataaccess = dataaccess;
     }
 
