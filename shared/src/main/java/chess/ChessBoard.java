@@ -72,8 +72,12 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         ChessBoard that = (ChessBoard) o;
 
@@ -81,8 +85,12 @@ public class ChessBoard {
             for (int col = 0; col < 8; col++) {
                 ChessPiece thisPiece = board[row][col];
                 ChessPiece thatPiece = that.board[row][col];
-                if (thisPiece == null && thatPiece == null) continue;
-                if (thisPiece == null || !thisPiece.equals(thatPiece)) return false;
+                if (thisPiece == null && thatPiece == null) {
+                    continue;
+                }
+                if (thisPiece == null || !thisPiece.equals(thatPiece)) {
+                    return false;
+                }
             }
         }
         return true;

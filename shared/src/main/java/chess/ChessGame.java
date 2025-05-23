@@ -137,7 +137,8 @@ public class ChessGame {
         ChessPiece pieceToPlace = piece;
 
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
-            if ((piece.getTeamColor() == TeamColor.WHITE && endPosition.getRow() == 8) || (piece.getTeamColor() == TeamColor.BLACK && endPosition.getRow() == 1)) {
+            if ((piece.getTeamColor() == TeamColor.WHITE && endPosition.getRow() == 8) ||
+                    (piece.getTeamColor() == TeamColor.BLACK && endPosition.getRow() == 1)) {
                 pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
             }
         }
@@ -212,7 +213,9 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) return false;
+        if (!isInCheck(teamColor)) {
+            return false;
+        }
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -249,7 +252,9 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) return false;
+        if (isInCheck(teamColor)) {
+            return false;
+        }
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -298,8 +303,12 @@ public class ChessGame {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         ChessGame other = (ChessGame) o;
 

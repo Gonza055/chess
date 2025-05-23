@@ -113,12 +113,7 @@ public class Server {
                 res.status(200);
                 return gson.toJson(new GameListResponse(result.games()));
             } catch (DataAccessException e) {
-                if (e.getMessage().equals("Unauthorized")) {
-                    res.status(401);
-                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
-                }
-                res.status(500);
-                return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
+                return handleDataAccessException(e, res);
             }
         });
         Spark.post("/game", (req, res) -> {
@@ -151,12 +146,7 @@ public class Server {
                 res.status(200);
                 return gson.toJson(result);
             } catch (DataAccessException e) {
-                if (e.getMessage().equals("Unauthorized")) {
-                    res.status(401);
-                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
-                }
-                res.status(500);
-                return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
+                return handleDataAccessException(e, res);
             } catch (Exception e) {
                 res.status(500);
                 return gson.toJson(new ErrorResponse("Error: Bad request"));
@@ -207,6 +197,15 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private Object handleDataAccessException(DataAccessException e, Response res) {
+        if ("Unauthorized".equals(e.getMessage())) {
+            res.status(401);
+            return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+        }
+        res.status(500);
+        return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
     }
 
     private record RegisterRequest(String username, String password, String email) {}

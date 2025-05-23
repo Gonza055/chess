@@ -57,13 +57,10 @@ public class ChessPiece {
 
         Collection<ChessMove> moves = new ArrayList<>();
 
-        if (board == null || myPosition == null) {
-            return moves;
-        }
+        if (board == null || myPosition == null) {return moves;}
 
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
-
 
         switch (type) {
             case PAWN:
@@ -91,7 +88,6 @@ public class ChessPiece {
                             moves.add(new ChessMove(myPosition, newPos, null));
                         }
                     }
-
                 }
 
                 for (int colOffset : new int[]{-1, 1}) {
@@ -118,7 +114,6 @@ public class ChessPiece {
 
                 break;
 
-
             case KING:
                 for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
                     for (int colOffset = -1; colOffset <= 1; colOffset++) {
@@ -128,44 +123,21 @@ public class ChessPiece {
                         int newRow = row + rowOffset;
                         int newCol = col + colOffset;
 
-                        if (isValidPosition(newRow, newCol)) {
-                            ChessPosition newPos = new ChessPosition(newRow, newCol);
-                            ChessPiece targetPiece = board.getPiece(newPos);
-                            if (targetPiece == null || targetPiece.getTeamColor() != pieceColor) {
-                                moves.add(new ChessMove(myPosition, newPos, null));
-                            }
-                        }
+                        tryAddMove(moves, newRow, newCol, board, myPosition);
 
 
                     }
                 }
                 break;
 
-
-
             case KNIGHT:
-                int [][] knightMoves = {
-                        {2, 1},
-                        {2, -1},
-                        {-2, 1},
-                        {-2, -1},
-                        {1, 2},
-                        {1, -2},
-                        {-1, 2},
-                        {-1, -2}
-                };
+                int [][] knightMoves = {{2, 1}, {2, -1}, {-2, 1}, {-2, -1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
 
                 for (int[] move : knightMoves) {
                     int newRow = row + move[0];
                     int newCol = col + move[1];
 
-                    if (isValidPosition(newRow, newCol)) {
-                        ChessPosition newPos = new ChessPosition(newRow, newCol);
-                        ChessPiece targetPiece = board.getPiece(newPos);
-                        if (targetPiece == null || targetPiece.getTeamColor() != pieceColor) {
-                            moves.add(new ChessMove(myPosition, newPos, null));
-                        }
-                    }
+                    tryAddMove(moves, newRow, newCol, board, myPosition);
                 }
                 break;
 
@@ -176,14 +148,11 @@ public class ChessPiece {
                 moves.addAll(getMove(board, myPosition, new int[]{-1, 0}));
                 break;
 
-
-
             case QUEEN:
                 moves.addAll(getMove(board, myPosition, new int[]{0, 1}, new int[] {1, 0}));
                 moves.addAll(getMove(board, myPosition, new int[]{0, -1}, new int[] {-1, 0}));
                 moves.addAll(getMove(board, myPosition, new int[]{1, 1}, new int[] {1, -1}));
                 moves.addAll(getMove(board, myPosition, new int[]{-1, 1}, new int[] {-1, -1}));
-
                 break;
 
             case BISHOP:
@@ -197,6 +166,16 @@ public class ChessPiece {
 
     private boolean isValidPosition(int row, int col) {
         return row >= 1 && row <= 8 && col >= 1 && col <= 8;
+    }
+
+    private void tryAddMove(Collection<ChessMove> moves, int newRow, int newCol, ChessBoard board, ChessPosition myPosition) {
+        if (isValidPosition(newRow, newCol)) {
+            ChessPosition newPos = new ChessPosition(newRow, newCol);
+            ChessPiece targetPiece = board.getPiece(newPos);
+            if (targetPiece == null || targetPiece.getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, newPos, null));
+            }
+        }
     }
 
     private Collection<ChessMove> getMove(ChessBoard board, ChessPosition myPosition, int[]... directions) {
@@ -217,7 +196,9 @@ public class ChessPiece {
                 newRow += rowDir;
                 newCol += colDir;
 
-                if (!isValidPosition(newRow, newCol)) break;
+                if (!isValidPosition(newRow, newCol)) {
+                    break;
+                }
 
                 ChessPosition newPos = new ChessPosition(newRow, newCol);
                 ChessPiece targetPiece = board.getPiece(newPos);
@@ -240,8 +221,12 @@ public class ChessPiece {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ChessPiece that = (ChessPiece) o;
         return pieceColor == that.pieceColor &&
                 type == that.type;

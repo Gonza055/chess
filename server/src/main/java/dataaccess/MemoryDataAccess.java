@@ -27,7 +27,9 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        if (users.containsKey(user.username())) throw new DataAccessException("User already exists");
+        if (users.containsKey(user.username())) {
+            throw new DataAccessException("User already exists");
+        }
         users.put(user.username(), user);
     }
 
@@ -55,13 +57,17 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        if (game.gameID() == null) throw new DataAccessException("Game ID must be set");
+        if (game.gameID() == null) {
+            throw new DataAccessException("Game ID must be set");
+        }
         games.put(game.gameID(), game);
     }
 
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
-        if (game.gameID() == null) throw new DataAccessException("Game ID must be set");
+        if (game.gameID() == null) {
+            throw new DataAccessException("Game ID must be set");
+        }
         games.put(gameID, game);
     }
 
