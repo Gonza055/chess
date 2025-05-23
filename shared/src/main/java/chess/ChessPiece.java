@@ -118,7 +118,9 @@ public class ChessPiece {
                 for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
                     for (int colOffset = -1; colOffset <= 1; colOffset++) {
 
-                        if (rowOffset == 0 && colOffset == 0) continue;
+                        if (rowOffset == 0 && colOffset == 0) {
+                            continue;
+                        }
 
                         int newRow = row + rowOffset;
                         int newCol = col + colOffset;

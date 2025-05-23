@@ -153,16 +153,7 @@ public class ChessGame {
         }
 
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
-
-
-
-
-
-
-
     }
-
-
 
     /**
      * Determines if the given team is in check
@@ -213,35 +204,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) {
-            return false;
-        }
-        for (int row = 1; row <= 8; row++) {
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> moves = piece.pieceMoves(board, position);
-                    for (ChessMove move : moves) {
-                        ChessPiece targetPiece = board.getPiece(move.getEndPosition());
-                        ChessPiece pieceToPlace = piece;
-                        if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
-                            pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
-                        }
-                        board.addPiece(move.getEndPosition(), pieceToPlace);
-                        board.addPiece(position, null);
-
-                        boolean stillInCheck = isInCheck(teamColor);
-                        board.addPiece(position, piece);
-                        board.addPiece(move.getEndPosition(), targetPiece);
-                        if (!stillInCheck) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        return true;
+        return hasNoLegalMoves(teamColor, true);
     }
 
     /**
@@ -252,9 +215,14 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) {
+        return hasNoLegalMoves(teamColor, false);
+    }
+
+    private boolean hasNoLegalMoves(TeamColor teamColor, boolean requireInCheck) {
+        if (isInCheck(teamColor) != requireInCheck) {
             return false;
         }
+
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
@@ -263,6 +231,7 @@ public class ChessGame {
                     Collection<ChessMove> moves = piece.pieceMoves(board, position);
                     for (ChessMove move : moves) {
                         ChessPiece targetPiece = board.getPiece(move.getEndPosition());
+
                         ChessPiece pieceToPlace = piece;
                         if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
                             pieceToPlace = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
@@ -270,10 +239,12 @@ public class ChessGame {
                         board.addPiece(move.getEndPosition(), pieceToPlace);
                         board.addPiece(position, null);
 
-                        boolean inCheckAfterMove = isInCheck(teamColor);
+                        boolean inCheck = isInCheck(teamColor);
+
                         board.addPiece(position, piece);
                         board.addPiece(move.getEndPosition(), targetPiece);
-                        if (!inCheckAfterMove) {
+
+                        if (!inCheck) {
                             return false;
                         }
                     }
@@ -282,6 +253,7 @@ public class ChessGame {
         }
         return true;
     }
+
 
     /**
      * Sets this game's chessboard with a given board
@@ -313,8 +285,6 @@ public class ChessGame {
         ChessGame other = (ChessGame) o;
 
         return teamTurn == other.teamTurn && board.equals(other.board);
-
-
     }
 
     @Override
@@ -322,6 +292,5 @@ public class ChessGame {
         int result = teamTurn.hashCode();
         result = 31 * result + board.hashCode();
         return result;
-
     }
 }
