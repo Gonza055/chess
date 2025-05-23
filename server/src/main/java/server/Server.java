@@ -45,6 +45,13 @@ public class Server {
     }
 
     private void registerEndpoints() {
+        registerUserEndpoints();
+        registerSessionEndpoints();
+        registerGameEndpoints();
+        registerDbEndpoints();
+    }
+
+    private void registerUserEndpoints() {
         Spark.post("/user", (req, res) -> {
             try {
                 RegisterRequest request = gson.fromJson(req.body(), RegisterRequest.class);
@@ -83,6 +90,9 @@ public class Server {
                 return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
             }
         });
+    }
+
+    private void registerSessionEndpoints() {
         Spark.delete("/session", (req, res) -> {
             String authToken = req.headers("Authorization");
             if (authToken == null) {
@@ -90,7 +100,7 @@ public class Server {
                 return gson.toJson(new ErrorResponse("Error: Unauthorized"));
             }
             try {
-                if (dataaccess.getAuth(authToken) == null){
+                if (dataaccess.getAuth(authToken) == null) {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
@@ -102,6 +112,9 @@ public class Server {
                 return gson.toJson(new ErrorResponse("Error: unauthorized"));
             }
         });
+    }
+
+    private void registerGameEndpoints() {
         Spark.get("/game", (req, res) -> {
             String authToken = req.headers("Authorization");
             if (authToken == null) {
@@ -133,7 +146,7 @@ public class Server {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
-                if (req.body() == null || req.body().trim().isEmpty()){
+                if (req.body() == null || req.body().trim().isEmpty()) {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
@@ -176,12 +189,15 @@ public class Server {
                     return gson.toJson(new ErrorResponse("Error: Bad request"));
                 } else if (e.getMessage().equals("Player already joined")) {
                     res.status(403);
-                    return  gson.toJson(new ErrorResponse("Error: Player already joined"));
+                    return gson.toJson(new ErrorResponse("Error: Player already joined"));
                 }
                 res.status(500);
                 return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
             }
         });
+    }
+    
+    private void registerDbEndpoints() {
         Spark.delete("/db", (req, res) -> {
             try {
                 Result result = clearService.clear();
