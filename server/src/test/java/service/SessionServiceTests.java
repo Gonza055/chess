@@ -1,4 +1,4 @@
-package passoff.server;
+package service;
 
 import dataaccess.*;
 import dataaccess.DataAccessException;
@@ -6,7 +6,6 @@ import model.AuthData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import service.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
