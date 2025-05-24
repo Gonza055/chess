@@ -71,7 +71,13 @@ public class MemoryDataAccess implements DataAccess {
         games.put(gameID, game);
     }
 
-
+    @Override
+    public void clear() throws DataAccessException {
+        deleteAllUsers();
+        deleteAllAuth();
+        deleteAllGames();
+        gameIdCounter.set(1);
+    }
 
     @Override
     public void deleteAllUsers() throws DataAccessException {
