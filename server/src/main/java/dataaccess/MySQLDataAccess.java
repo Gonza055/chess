@@ -44,11 +44,15 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE username = ?")) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("SELECT * FROM users WHERE username = ?")) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return new UserData(rs.getString("username"), rs.getString("password"), rs.getString("email"));
+                return new UserData
+                        (rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("email"));
             }
             return null;
         } catch (SQLException e) {
@@ -57,7 +61,8 @@ public abstract class MySQLDataAccess implements DataAccess {
     }
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("INSERT INTO users(username, password, email) VALUES (?, ?, ?)") ) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("INSERT INTO users(username, password, email) VALUES (?, ?, ?)") ) {
             String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt(12));
             stmt.setString(1, user.username());
             stmt.setString(2, hashedPassword);
@@ -71,7 +76,8 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM auth WHERE authToken = ?")) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("SELECT * FROM auth WHERE authToken = ?")) {
             stmt.setString(1, authToken);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -85,7 +91,8 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("INSERT INTO auth(authToken, username) VALUES (?, ?)") ) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("INSERT INTO auth(authToken, username) VALUES (?, ?)") ) {
             stmt.setString(1, auth.authToken());
             stmt.setString(2, auth.username());
             stmt.executeUpdate();
@@ -96,7 +103,8 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM auth WHERE authToken = ?")) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("DELETE FROM auth WHERE authToken = ?")) {
             stmt.setString(1, authToken);
             stmt.executeUpdate();
         } catch (SQLException e){
@@ -106,13 +114,18 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM games WHERE gameID = ?")){
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("SELECT * FROM games WHERE gameID = ?")){
             stmt.setInt(1, gameID);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()){
                 String gameJson = rs.getString("game");
                 ChessGame game = gameJson != null ? gson.fromJson(gameJson, ChessGame.class) : null;
-                return new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game);
+                return new GameData
+                        (rs.getInt("gameID"),
+                        rs.getString("whiteUsername"),
+                        rs.getString("blackUsername"),
+                        rs.getString("gameName"), game);
             }
             return null;
         } catch (SQLException e){
@@ -122,7 +135,8 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("INSERT INTO games(gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)")){
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("INSERT INTO games(gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)")){
             stmt.setInt(1, game.gameID());
             stmt.setString(2, game.whiteUsername());
             stmt.setString(3, game.blackUsername());
@@ -136,7 +150,8 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("UPDATE games whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?")) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("UPDATE games whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?")) {
             stmt.setString(1, game.whiteUsername());
             stmt.setString(2, game.blackUsername());
             stmt.setString(3, game.gameName());
@@ -151,12 +166,17 @@ public abstract class MySQLDataAccess implements DataAccess {
     @Override
     public GameData[] getAllGames() throws DataAccessException{
         List<GameData> games = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("SELECT * FROM games")){
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("SELECT * FROM games")){
             ResultSet rs = stmt.executeQuery();
             while (rs.next()){
                 String gameJson = rs.getString("game");
                 ChessGame game = gameJson != null ? gson.fromJson(gameJson, ChessGame.class) : null;
-                games.add(new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"), rs.getString("gameName"), game));
+                games.add(new GameData
+                        (rs.getInt("gameID"),
+                        rs.getString("whiteUsername"),
+                        rs.getString("blackUsername"),
+                        rs.getString("gameName"), game));
             }
             return games.toArray(new GameData[0]);
         } catch (SQLException e){
@@ -166,7 +186,8 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public int generateGameID() throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("INSERT INTO games (gameName) VALUES ('temp'); SELECT LAST_INSERT_ID() AS gameID")){
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("INSERT INTO games (gameName) VALUES ('temp'); SELECT LAST_INSERT_ID() AS gameID")){
             stmt.setString(1, "temp");
             stmt.executeUpdate();
             ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID() AS gameID");
