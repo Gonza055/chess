@@ -203,12 +203,35 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public void clear() throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); Statement stmt = conn.createStatement()){
-            stmt.executeUpdate("DELETE FROM games");
-            stmt.executeUpdate("DELETE FROM auth");
-            stmt.executeUpdate("DELETE FROM users");
+        deleteAllGames();
+        deleteAllAuth();
+        deleteAllUsers();
+    }
+
+    @Override
+    public void deleteAllUsers() throws DataAccessException{
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM users")){
+            stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new DataAccessException("failed to clear database " + e.getMessage());
+            throw new DataAccessException("failed to delete all users " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteAllAuth() throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM auth")) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to delete all auths " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteAllGames() throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("DELETE FROM games")) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to delete all games " + e.getMessage());
         }
     }
 }
