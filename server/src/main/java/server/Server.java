@@ -1,7 +1,6 @@
 package server;
 
 import dataaccess.DataAccessException;
-import dataaccess.MemoryDataAccess;
 import dataaccess.DataAccess;
 import model.AuthData;
 import model.GameData;
@@ -113,8 +112,8 @@ public class Server {
                 res.status(200);
                 return gson.toJson(new EmptyResponse());
             } catch (DataAccessException e) {
-                res.status(401);
-                return gson.toJson(new ErrorResponse("Error: unauthorized"));
+                res.status(500);
+                return gson.toJson(new ErrorResponse("Error: Bad Request"));
             }
         });
     }
@@ -177,7 +176,7 @@ public class Server {
         });
         Spark.put("/game", (req, res) -> {
             String authToken = req.headers("Authorization");
-            if (authToken == null || dataaccess.getAuth(authToken) == null) {
+            if (authToken == null) {
                 res.status(401);
                 return gson.toJson(new ErrorResponse("Error: Unauthorized"));
             }

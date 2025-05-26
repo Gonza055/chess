@@ -157,7 +157,10 @@ public class MySQLDataAccess implements DataAccess {
             stmt.setString(3, game.gameName());
             stmt.setString(4, game.game() != null ? gson.toJson(game.game()) : null);
             stmt.setInt(5, gameID);
-            stmt.executeUpdate();
+            int rowAffected = stmt.executeUpdate();
+            if (rowAffected == 0) {
+                throw new DataAccessException("failed to update game");
+            }
         } catch (SQLException e) {
             throw new DataAccessException("failed to update game " + e.getMessage());
         }
