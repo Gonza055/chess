@@ -10,6 +10,7 @@ import service.*;
 import com.google.gson.Gson;
 import spark.*;
 import service.Results.*;
+import dataaccess.MySQLDataAccess;
 
 public class Server {
 
@@ -21,7 +22,11 @@ public class Server {
     private final Gson gson;
 
     public Server() {
-        this.dataaccess = new MemoryDataAccess();
+        try {
+            this.dataaccess = new MySQLDataAccess();
+        }catch (DataAccessException e){
+            throw new RuntimeException("Unable to connect to database", e);
+        }
         this.userService = new UserService(dataaccess);
         this.gameService = new GameService(dataaccess);
         this.sessionService = new SessionService(dataaccess);
@@ -133,7 +138,7 @@ public class Server {
             String authToken = req.headers("Authorization");
             if (authToken == null) {
                 res.status(401);
-                return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+                return gson.toJson(new ErrorResponse("Error: Unauthorized1"));
             }
             try {
                 AuthData auth = dataaccess.getAuth(authToken);
@@ -141,10 +146,15 @@ public class Server {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
+                System.out.println("Looking up user: " + auth.username());
+
                 UserData user = dataaccess.getUser(auth.username());
+                System.out.println("Found user? " + (user != null));
                 if (user == null) {
+                    System.out.println("Received token: " + authToken);
+                    System.out.println("Valid? " + (dataaccess.getAuth(authToken) != null));
                     res.status(401);
-                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
+                    return gson.toJson(new ErrorResponse("Error: Unauthorized3"));
                 }
                 if (req.body() == null || req.body().trim().isEmpty()) {
                     res.status(401);
@@ -167,7 +177,7 @@ public class Server {
         });
         Spark.put("/game", (req, res) -> {
             String authToken = req.headers("Authorization");
-            if (authToken == null) {
+            if (authToken == null || dataaccess.getAuth(authToken) == null) {
                 res.status(401);
                 return gson.toJson(new ErrorResponse("Error: Unauthorized"));
             }

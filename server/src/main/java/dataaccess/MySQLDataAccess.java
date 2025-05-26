@@ -12,7 +12,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MySQLDataAccess implements DataAccess {
+public class MySQLDataAccess implements DataAccess {
     private final Gson gson = new Gson();
 
     public MySQLDataAccess() throws DataAccessException {
@@ -81,7 +81,7 @@ public abstract class MySQLDataAccess implements DataAccess {
             stmt.setString(1, authToken);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return new AuthData(rs.getString("authToken"), rs.getString("username"));
+                return new AuthData(rs.getString("username"), rs.getString("authToken"));
             }
             return null;
         } catch (SQLException e) {
@@ -151,7 +151,7 @@ public abstract class MySQLDataAccess implements DataAccess {
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
-                ("UPDATE games whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?")) {
+                ("UPDATE games SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?")) {
             stmt.setString(1, game.whiteUsername());
             stmt.setString(2, game.blackUsername());
             stmt.setString(3, game.gameName());
@@ -186,17 +186,21 @@ public abstract class MySQLDataAccess implements DataAccess {
 
     @Override
     public int generateGameID() throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
-                ("INSERT INTO games (gameName) VALUES ('temp'); SELECT LAST_INSERT_ID() AS gameID")){
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("INSERT INTO games (gameName) VALUES (?)", Statement .RETURN_GENERATED_KEYS)) {
             stmt.setString(1, "temp");
             stmt.executeUpdate();
-            ResultSet rs = stmt.executeQuery("SELECT LAST_INSERT_ID() AS gameID");
-            if (rs.next()){
-                return rs.getInt("gameID");
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    int gameID = rs.getInt(1);
+                    try (PreparedStatement stmt2 = conn.prepareStatement("DELETE FROM games WHERE gameID = ?")) {
+                        stmt2.setInt(1, gameID);
+                        stmt2.executeUpdate();
+                    }
+                    return gameID;
+                }
+                throw new DataAccessException("failed to generate gameID");
             }
-            throw new DataAccessException("failed to generate gameID");
-
-        } catch (SQLException e){
+        } catch (SQLException e) {
             throw new DataAccessException("failed to generate gameID " + e.getMessage());
         }
     }
