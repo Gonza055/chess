@@ -189,7 +189,8 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public int generateGameID() throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement("INSERT INTO games (gameName) VALUES (?)", Statement .RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
+                ("INSERT INTO games (gameName) VALUES (?)", Statement .RETURN_GENERATED_KEYS)) {
             stmt.setString(1, "temp");
             stmt.executeUpdate();
             try (ResultSet rs = stmt.getGeneratedKeys()) {
