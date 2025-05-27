@@ -11,11 +11,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTests {
     private UserService userService;
-    private MemoryDataAccess dataAccess;
+    private MySQLDataAccess dataAccess;
 
     @BeforeEach
     void setUp() throws DataAccessException {
-        dataAccess = new MemoryDataAccess(){};
+        dataAccess = new MySQLDataAccess(){};
         userService = new UserService(dataAccess);
         try {
             userService.clear();

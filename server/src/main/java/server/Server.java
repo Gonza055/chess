@@ -137,7 +137,7 @@ public class Server {
             String authToken = req.headers("Authorization");
             if (authToken == null) {
                 res.status(401);
-                return gson.toJson(new ErrorResponse("Error: Unauthorized1"));
+                return gson.toJson(new ErrorResponse("Error: Unauthorized"));
             }
             try {
                 AuthData auth = dataaccess.getAuth(authToken);
@@ -145,15 +145,10 @@ public class Server {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
-                System.out.println("Looking up user: " + auth.username());
-
                 UserData user = dataaccess.getUser(auth.username());
-                System.out.println("Found user? " + (user != null));
                 if (user == null) {
-                    System.out.println("Received token: " + authToken);
-                    System.out.println("Valid? " + (dataaccess.getAuth(authToken) != null));
                     res.status(401);
-                    return gson.toJson(new ErrorResponse("Error: Unauthorized3"));
+                    return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
                 if (req.body() == null || req.body().trim().isEmpty()) {
                     res.status(401);
