@@ -1,16 +1,24 @@
 package ui;
 
 import java.util.Scanner;
+import chess.*;
 
 public class Client {
     private final String serverURL;
     private final ServerFacade serverFacade;
     private boolean isRunning;
+    private boolean isLoggedIn;
+    private ChessBoard board;
+    private String currentPlayerColor;
 
     public Client(String serverURL) {
         this.serverURL = serverURL;
         this.serverFacade = new ServerFacade(serverURL);
         this.isRunning = true;
+        this.isLoggedIn = false;
+        this.board = new ChessBoard();
+        this.board.resetBoard();
+        this.currentPlayerColor = null;
     }
 
     public void run() {
@@ -22,6 +30,48 @@ public class Client {
             handleCommand(command, scanner);
         }
         scanner.close();
+    }
+
+    private void handlePreLoginCommand(String command, Scanner scanner) {
+        switch (command) {
+            case "help":
+                displayHelp();
+                break;
+            case "quit":
+                isRunning = false;
+                System.out.println("Goodbye!");
+                break;
+            case "login":
+                handleLogin(scanner);
+                break;
+            case "register":
+                handleRegister(scanner);
+                break;
+            default:
+                System.out.println("Invalid command, type Help for a list of commands");
+        }
+    }
+
+    private void handlePostLoginCommand(String command, Scanner scanner) {
+        switch (command) {
+            case "help":
+                displayHelp();
+                break;
+            case "quit":
+                isRunning = false;
+                System.out.println("Goodbye!");
+                break;
+            case "logout":
+                handleLogout();
+                break;
+            case "Create game":
+                handleCreateGame(scanner);
+                break;
+            case "Join game":
+                handleJoinGame(scanner);
+            default:
+                System.out.println("Invalid command, type Help for a list of commands");
+        }
     }
 
     private void handleCommand(String command, Scanner scanner) {
