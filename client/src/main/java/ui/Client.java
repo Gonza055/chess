@@ -10,6 +10,7 @@ public class Client {
     private boolean isLoggedIn;
     private ChessBoard board;
     private String currentPlayerColor;
+    private String authToken;
 
     public Client(String serverURL) {
         this.serverURL = serverURL;
@@ -30,6 +31,14 @@ public class Client {
             handleCommand(command, scanner);
         }
         scanner.close();
+    }
+
+    private void handleCommand(String command, Scanner scanner) {
+        if (isLoggedIn) {
+            handlePostLoginCommand(command, scanner);
+        } else {
+            handlePreLoginCommand(command, scanner);
+        }
     }
 
     private void handlePreLoginCommand(String command, Scanner scanner) {
@@ -57,50 +66,39 @@ public class Client {
             case "help":
                 displayHelp();
                 break;
-            case "quit":
-                isRunning = false;
-                System.out.println("Goodbye!");
-                break;
             case "logout":
                 handleLogout();
                 break;
-            case "Create game":
+            case "create game":
                 handleCreateGame(scanner);
                 break;
-            case "Join game":
+            case "list games":
+                handleListGames();
+                break;
+            case "play game":
                 handleJoinGame(scanner);
-            default:
-                System.out.println("Invalid command, type Help for a list of commands");
-        }
-    }
-
-    private void handleCommand(String command, Scanner scanner) {
-        switch (command) {
-            case "help":
-                displayHelp();
-                break;
-            case "quit":
-                isRunning = false;
-                System.out.println("Goodbye!");
-                break;
-            case "login":
-                handleLogin(scanner);
-                break;
-            case "register":
-                handleRegister(scanner);
+            case "observe game":
+                handleObserveGame(scanner);
                 break;
             default:
                 System.out.println("Invalid command, type Help for a list of commands");
         }
     }
-
 
     private void displayHelp() {
         System.out.println("Available commands: ");
         System.out.println("Help - Displays this help message");
-        System.out.println("Login - Logs in to an existing account");
-        System.out.println("Register - Registers a new user");
-        System.out.println("Quit - Exit the client");
+        if (isLoggedIn){
+            System.out.println("Logout - Logs out of the current account");
+            System.out.println("Create Game - Creates a new chess game");
+            System.out.println("List Games - Lists existing chess games");
+            System.out.println("Play Game - Join an available chess game");
+            System.out.println("Observe Game - Observe an ongoing chess game");
+        } else {
+            System.out.println("Login - Logs in to an existing account");
+            System.out.println("Register - Registers a new user");
+            System.out.println("Quit - Exit the client");
+        }
     }
 
     private void handleLogin(Scanner scanner) {
@@ -129,6 +127,81 @@ public class Client {
         } catch (Exception e){
             System.out.println("Registration failed: " + e.getMessage());
         }
+    }
+
+    private void handleLogout() {
+        String response = null;
+        try {
+            response = serverFacade.logout();
+        } catch (Exception e){
+            System.out.println("Logout failed: " + e.getMessage());
+        }
+        authToken = null;
+        isLoggedIn = false;
+        System.out.println("Logout successful " + response);
+        displayBoard();
+    }
+
+    private void handleCreateGame(Scanner scanner) {
+        if (!loginCheck()){
+            return;
+        }
+        System.out.println("Enter game name: ");
+        String gameName = scanner.nextLine().trim();
+        try {
+            String response = serverFacade.createGame(gameName);
+            System.out.println("Game created " + response);
+        } catch (Exception e){
+            System.out.println("Game creation failed: " + e.getMessage());
+        }
+    }
+
+    private void handleListGames(){
+        if (!loginCheck()){
+            return;
+        }
+        try {
+            String response = serverFacade.listGames();
+            System.out.println("Games: " + response);
+        } catch (Exception e){
+            System.out.println("Game listing failed: " + e.getMessage());
+        }
+    }
+
+    private void handleJoinGame(Scanner scanner) {
+        if (!loginCheck()){
+            return;
+        }
+        System.out.println("Enter game id: ");
+        String gameId = scanner.nextLine().trim();
+        System.out.println("Enter player color (white/black): ");
+        String playerColor = scanner.nextLine().trim().toLowerCase();
+        if (!playerColor.equals("white") && !playerColor.equals("black")) {
+            System.out.println("Invalid player color, must be white or black");
+            return;
+
+        }
+        try {
+            String response = serverFacade.joinGame(gameId, playerColor);
+            currentPlayerColor = playerColor;
+            System.out.println("Game joined " + response);
+            displayBoard();
+        } catch (Exception e){
+            System.out.println("Game joining failed: " + e.getMessage());
+        }
+
+    }
+    private void handleObserveGame(Scanner scanner) {
+        return;
+    }
+
+
+    private boolean loginCheck() {
+        if (!isLoggedIn) {
+            System.out.println("You must be logged in to perform this action");
+            return false;
+        }
+        return true;
     }
 
     private void displayBoard() {
