@@ -27,13 +27,44 @@ public class ServerFacadeTests {
     @BeforeAll
     public static void init() {
         server = new Server();
-        var port = server.run(0);
-        System.out.println("Started test HTTP server on " + port);
+        try {
+            port = server.run(0);
+            serverUrl = "http://localhost:" + port;
+            System.out.println("Started test HTTP server on " + serverUrl);
+            serverFacade = new ServerFacade(serverUrl);
+            gson = new Gson();
+        } catch (Exception e) {
+            System.err.println("Failed to start server: " + e.getMessage());
+            fail("Server initialization failed. Unable to assign a dynamic port.");
+        }
     }
 
     @AfterAll
     static void stopServer() {
-        server.stop();
+        if (server != null) {
+            server.stop();
+            System.out.println("Stopped test HTTP server on " + serverUrl);
+        }
+    }
+
+
+    @BeforeEach
+    public void setUp() {
+        if (serverFacade != null) {
+            serverFacade.setAuthToken(null);
+        }
+    }
+
+
+    @AfterEach
+    public void tearDown() {
+        if (serverFacade != null) {
+            try {
+                serverFacade.clearServerState();
+            } catch (Exception e) {
+                System.err.println("Failed to clear server state after test: " + e.getMessage());
+            }
+        }
     }
 
 

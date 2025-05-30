@@ -169,6 +169,10 @@ public class ServerFacade {
         return response.substring(start, end);
     }
 
+    public void clearServerState() throws IOException {
+        sendDeleteRequest("/db");
+    }
+
 
 
 }
