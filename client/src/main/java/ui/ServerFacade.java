@@ -153,8 +153,26 @@ public class ServerFacade {
     public String createGame(String gameName) throws IOException {
         Map<String, String> data = new HashMap<>();
         data.put("gameName", gameName);
-        return sendPostRequest("/game", data);
+        return sendPostRequestWithAuth("/game", data);
     }
+
+    private String sendPostRequestWithAuth(String endpoint, Map<String, String> data) throws IOException {
+        URL url = new URL(serverURL + endpoint);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        if (authToken != null && !authToken.isEmpty()) {
+            conn.setRequestProperty("Authorization", authToken);
+        }
+        conn.setDoOutput(true);
+        String jsonInputString = mapToJson(data);
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+        return handleResponse(conn);
+    }
+
     public String joinGame(String gameId, String playerColor) throws IOException {
         Map<String, String> data = new HashMap<>();
         data.put("gameId", gameId);
