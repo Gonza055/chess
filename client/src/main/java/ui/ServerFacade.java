@@ -173,9 +173,9 @@ public class ServerFacade {
         return handleResponse(conn);
     }
 
-    public String joinGame(String gameId, String playerColor) throws IOException {
+    public String joinGame(String gameID, String playerColor) throws IOException {
         Map<String, String> data = new HashMap<>();
-        data.put("gameId", gameId);
+        data.put("gameID", gameID);
         data.put("playerColor", playerColor);
         return sendPutRequest("/game", data);
     }

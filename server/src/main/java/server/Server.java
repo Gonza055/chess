@@ -108,14 +108,16 @@ public class Server {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
                 }
-                Result result = sessionService.logout(authToken);
+                sessionService.logout(authToken);
+
                 res.status(200);
-                return gson.toJson(new EmptyResponse());
+                return gson.toJson(new MessageResponse("user logged out"));
             } catch (DataAccessException e) {
                 res.status(500);
                 return gson.toJson(new ErrorResponse("Error: Bad Request"));
             }
         });
+
     }
 
     private void registerGameEndpoints() {
@@ -241,4 +243,6 @@ public class Server {
     private record ErrorResponse(String message) {}
 
     private record EmptyResponse() {}
+
+    private record MessageResponse(String message) {}
 }
