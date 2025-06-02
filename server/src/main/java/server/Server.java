@@ -45,6 +45,14 @@ public class Server {
         Spark.init();
 
         Spark.awaitInitialization();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                clearService.clear();
+            } catch (Exception e) {
+                System.err.println("Error clearing database: " + e.getMessage());
+            }
+        }));
         return Spark.port();
     }
 
