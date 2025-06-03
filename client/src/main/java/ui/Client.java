@@ -109,6 +109,10 @@ public class Client {
         try {
             String response = serverFacade.login(username, password);
             System.out.println("Login successful " + response);
+            isLoggedIn = true;
+            authToken = serverFacade.getAuthToken();
+            System.out.println("You are now logged in");
+            System.out.println("Type Help for a list of commands");
         } catch (Exception e){
             System.out.println("Login failed: " + e.getMessage());
         }
