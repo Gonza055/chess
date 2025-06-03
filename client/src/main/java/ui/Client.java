@@ -75,7 +75,7 @@ public class Client {
             case "list games":
                 handleListGames();
                 break;
-            case "play game":
+            case "join game":
                 handleJoinGame(scanner);
             case "observe game":
                 handleObserveGame(scanner);
@@ -92,7 +92,7 @@ public class Client {
             System.out.println("Logout - Logs out of the current account");
             System.out.println("Create Game - Creates a new chess game");
             System.out.println("List Games - Lists existing chess games");
-            System.out.println("Play Game - Join an available chess game");
+            System.out.println("Join Game - Join an available chess game");
             System.out.println("Observe Game - Observe an ongoing chess game");
         } else {
             System.out.println("Login - Logs in to an existing account");

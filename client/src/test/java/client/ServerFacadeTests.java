@@ -67,12 +67,6 @@ public class ServerFacadeTests {
         }
     }
 
-
-    @Test
-    public void sampleTest() {
-        Assertions.assertTrue(true);
-    }
-
     @Test
     @Order(1)
     @DisplayName("Test Register Success")
@@ -158,6 +152,16 @@ public class ServerFacadeTests {
 
     @Test
     @Order(8)
+    @DisplayName("Test Create Game Failure without Auth")
+    public void testCreateGameFailure() throws IOException {
+        assumeTrue(serverFacade != null, "ServerFacade is not initialized");
+        serverFacade.setAuthToken(null);
+        assertThrows(IOException.class, () -> serverFacade.createGame("TestGame"),
+                "An exception must be thrown when creating games without authentication");
+    }
+
+    @Test
+    @Order(9)
     @DisplayName("Test Join Game Success")
     public void testJoinGameSuccess() throws IOException {
         assumeTrue(serverFacade != null, "ServerFacade is not initialized");
@@ -190,12 +194,21 @@ public class ServerFacadeTests {
         }
         JsonObject jsonResponse = gson.fromJson(joinResponse, JsonObject.class);
         assertNotNull(joinResponse, "Join game response must not be null");
-        //assertTrue(jsonResponse.has("message") && jsonResponse.get("message").getAsString().contains("Joined"),
-                //"The response must indicate successful join");
     }
 
     @Test
-    @Order(9)
+    @Order(10)
+    @DisplayName("Test Join Game Failure with Invalid Game")
+    public void testJoinGameFailure() throws IOException {
+        assumeTrue(serverFacade != null, "ServerFacade is not initialized");
+        serverFacade.register("testUser", "password123", "test@example.com");
+        serverFacade.login("testUser", "password123");
+        assertThrows(IOException.class, () -> serverFacade.joinGame("999", "WHITE"),
+                "An exception must be thrown when joining an invalid game (gameID no existente)");
+    }
+
+    @Test
+    @Order(11)
     @DisplayName("Test List Games Success")
     public void testListGamesSuccess() throws IOException {
         assumeTrue(serverFacade != null, "ServerFacade is not initialized");
@@ -209,7 +222,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    @Order(10)
+    @Order(12)
     @DisplayName("Test List Games Failure without Auth")
     public void testListGamesFailure() throws IOException {
         assumeTrue(serverFacade != null, "ServerFacade is not initialized");
