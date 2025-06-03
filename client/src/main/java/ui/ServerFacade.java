@@ -127,7 +127,7 @@ public class ServerFacade {
         data.put("password", password);
         data.put("email", email);
         String response = sendPostRequest("/user", data);
-        authToken = ExtractAuthToken(response);
+        authToken = extractAuthToken(response);
         return response;
     }
 
@@ -136,7 +136,7 @@ public class ServerFacade {
         data.put("username", username);
         data.put("password", password);
         String response = sendPostRequest("/session", data);
-        authToken = ExtractAuthToken(response);
+        authToken = extractAuthToken(response);
         return response;
     }
 
@@ -180,7 +180,7 @@ public class ServerFacade {
         return sendPutRequest("/game", data);
     }
 
-    private String ExtractAuthToken(String response) {
+    private String extractAuthToken(String response) {
         int start = response.indexOf("\"authToken\":\"");
         start += "\"authToken\":\"".length();
         int end = response.indexOf("\"", start);
