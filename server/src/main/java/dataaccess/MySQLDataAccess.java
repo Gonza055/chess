@@ -11,9 +11,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MySQLDataAccess implements DataAccess {
     private final Gson gson = new Gson();
+    private final AtomicInteger gameIdCounter = new AtomicInteger(1);
 
     public MySQLDataAccess() throws DataAccessException {
         DatabaseManager.createDatabase();
@@ -188,32 +190,17 @@ public class MySQLDataAccess implements DataAccess {
     }
 
     @Override
-    public int generateGameID() throws DataAccessException{
-        try (Connection conn = DatabaseManager.getConnection(); PreparedStatement stmt = conn.prepareStatement
-                ("INSERT INTO games (gameName) VALUES (?)", Statement .RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, "temp");
-            stmt.executeUpdate();
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int gameID = rs.getInt(1);
-                    try (PreparedStatement stmt2 = conn.prepareStatement("DELETE FROM games WHERE gameID = ?")) {
-                        stmt2.setInt(1, gameID);
-                        stmt2.executeUpdate();
-                    }
-                    return gameID;
-                }
-                throw new DataAccessException("failed to generate gameID");
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("failed to generate gameID " + e.getMessage());
-        }
+    public int generateGameID() throws DataAccessException {
+        return gameIdCounter.getAndIncrement();
     }
+
 
     @Override
     public void clear() throws DataAccessException{
         deleteAllGames();
         deleteAllAuth();
         deleteAllUsers();
+        gameIdCounter.set(1);
     }
 
     @Override
