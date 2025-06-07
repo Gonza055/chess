@@ -1,4 +1,4 @@
-package server;
+package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
