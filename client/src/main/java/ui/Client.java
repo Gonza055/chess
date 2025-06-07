@@ -16,10 +16,17 @@ public class Client {
     private ChessBoard board;
     private String currentPlayerColor;
     private String authToken;
+    private String currentGameId;
+    private final Gson gson = new Gson();
+    private WebSocketClient wsClient;
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }
 
     public Client(String serverURL) {
         this.serverURL = serverURL;
         this.serverFacade = new ServerFacade(serverURL);
+        this.wsClient = new WebSocketClient(this);
         this.isRunning = true;
         this.isLoggedIn = false;
         this.board = new ChessBoard();
@@ -86,6 +93,75 @@ public class Client {
                 break;
             default:
                 System.out.println("Invalid command, type Help for a list of commands");
+        }
+    }
+
+    private void handleGameCommand(String command, Scanner scanner) {
+        switch (command) {
+            case "move":
+                handleMove(scanner);
+                break;
+            case "resign":
+                handleResign();
+                break;
+            case "leave":
+                handleLeave();
+                break;
+            default:
+                System.out.println("Invalid command, type Help for a list of commands");
+        }
+    }
+
+    private void handleMove(Scanner scanner) {
+        if (currentGameId == null) {
+            System.out.println("You must join a game first");
+            return;
+        }
+        System.out.println("Enter move (e.g., e2-e4): ");
+        String moveStr = scanner.nextLine().trim();
+        String[] positions = moveStr.split("-");
+        if (positions.length != 2) {
+            System.out.println("Invalid move format");
+            return;
+        }
+        try {
+            ChessPosition start = new ChessPosition(Integer.parseInt(positions[0].substring(1)), positions[0].charAt(0) - 'a' + 1);
+            ChessPosition end = new ChessPosition(Integer.parseInt(positions[1].substring(1)), positions[1].charAt(0) - 'a' + 1);
+            ChessMove move = new ChessMove(start, end, null);
+            wsClient.sendMove(gson.toJson(move));
+            System.out.println("Move sent: " + moveStr);
+        } catch (Exception e) {
+            System.out.println("Invalid move: " + e.getMessage());
+        }
+    }
+
+    private void handleResign() {
+        if (currentGameId == null) {
+            System.out.println("You must join a game first");
+            return;
+        }
+        try {
+            wsClient.sendResign();
+            System.out.println("Resigned from game");
+            currentGameId = null;
+            currentPlayerColor = null;
+        } catch (IOException e) {
+            System.out.println("Resign failed: " + e.getMessage());
+        }
+    }
+
+    private void handleLeave() {
+        if (currentGameId == null) {
+            System.out.println("You must join a game first");
+            return;
+        }
+        try {
+            wsClient.sendLeave();
+            System.out.println("Left game");
+            currentGameId = null;
+            currentPlayerColor = null;Add commentMore actions
+        } catch (IOException e) {
+            System.out.println("Leave failed: " + e.getMessage());
         }
     }
 
@@ -231,6 +307,8 @@ public class Client {
         try {
             serverFacade.joinGame(gameId, playerColor);
             currentPlayerColor = playerColor;
+            currentGameId = gameId;
+            wsClient.connect("ws://localhost:8081", authToken, gameId);
             System.out.println("Game joined");
             displayBoard();
         } catch (IOException e){
@@ -246,7 +324,19 @@ public class Client {
 
     }
     private void handleObserveGame(Scanner scanner) {
-        return;
+        if (!loginCheck()) {
+            return;
+        }
+        System.out.println("Enter game id: ");
+        String gameId = scanner.nextLine().trim();
+        try {
+            currentGameId = gameId;
+            wsClient.connect("ws://localhost:8081", authToken, gameId);
+            System.out.println("Observing game " + gameId);
+            displayBoard();
+        } catch (Exception e) {
+            System.out.println("Observing failed: " + e.getMessage());
+        }
     }
 
 
