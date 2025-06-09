@@ -20,11 +20,12 @@ public class Server {
     private final SessionService sessionService;
     private final ClearService clearService;
     private final Gson gson;
-    private final WebSocketServer webSocketServer = new WebSocketServer();
+    private final WebSocketServer webSocketServer;
 
     public Server() {
         try {
             this.dataaccess = new MySQLDataAccess();
+            this.webSocketServer = new WebSocketServer();
         }catch (DataAccessException e){
             throw new RuntimeException("Unable to connect to database", e);
         }
@@ -45,11 +46,8 @@ public class Server {
 
         //This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
-        try {
-            webSocketServer.start(8081);
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to start WebSocket server", e);
-        }
+
+        webSocketServer.run();
 
         Spark.awaitInitialization();
 
