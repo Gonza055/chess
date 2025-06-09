@@ -159,7 +159,7 @@ public class Client {
             wsClient.sendLeave();
             System.out.println("Left game");
             currentGameId = null;
-            currentPlayerColor = null;Add commentMore actions
+            currentPlayerColor = null;
         } catch (IOException e) {
             System.out.println("Leave failed: " + e.getMessage());
         }
