@@ -11,6 +11,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import service.GameService;
 import websocket.commands.UserGameCommand;
+import websocket.commands.ConnectCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.messages.ServerMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessageNotification;
@@ -67,27 +69,116 @@ public class WebSocketServer {
 
     @OnWebSocketMessage
     public void OnMessage(Session session, String message) throws IOException {
-        UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
-        String authToken = getAuthTokenFromSession(session);
-        Integer gameID = getGameIDFromSession(session);
         try {
-            switch (command.getCommandType()) {
+            UserGameCommand baseCommand = gson.fromJson(message, UserGameCommand.class);
+
+            String authToken;
+            Integer gameID;
+
+            switch (baseCommand.getCommandType()) {
                 case CONNECT:
+                    ConnectCommand connectCommand = gson.fromJson(message, ConnectCommand.class);
+                    authToken = connectCommand.getAuthToken();
+                    gameID = connectCommand.getGameID();
+
+                    if (authToken == null || gameID == null) {
+                        sendError(session, "Error: Missing AuthToken or GameID");
+                        session.close(4000, "Missing credentials");
+                        return;
+                    }
+
+                    String connectingUsername = gameService.getUsernameFromAuth(authToken);
+                    ChessGame.TeamColor playerColor = connectCommand.getPlayerColor();
+
+                    sessions.put(authToken, session);
+                    gameSessions.computeIfAbsent(gameID, k -> new HashMap<>()).put(authToken, session);
+                    sessionAuthTokens.put(session, authToken);
+                    authTokenGameIds.put(authToken, gameID);
+
+                    ChessGame gameStateOnConnect = gameService.getGameState(gameID, authToken);
+                    sendMessage(session, new LoadGameMessage(gameStateOnConnect));
+
+                    String playerType = (playerColor != null) ? playerColor.toString() : "observer";
+                    broadcastNotification(gameID, connectingUsername + " joined game as " + playerType, session);
                     break;
+
                 case MAKE_MOVE:
-                    ChessMove move = gson.fromJson(message, ChessMove.class);
-                    //ChessGame.makeMove(move);
+                    MakeMoveCommand makeMoveCommand = gson.fromJson(message, MakeMoveCommand.class);
+                    authToken = makeMoveCommand.getAuthToken();
+                    gameID = makeMoveCommand.getGameID();
+
+                    if (authToken == null || gameID == null || !sessionAuthTokens.containsValue(authToken) || !Objects.equals(authTokenGameIds.get(authToken), gameID)) {
+                        sendError(session, "Error: Not connected to a game");
+                        session.close(4001, "Not connected to a game");
+                        return;
+                    }
+
+                    String movingUsername = gameService.getUsernameFromAuth(authToken);
+                    ChessMove move = makeMoveCommand.getMove();
+                    gameService.makeMove(gameID, authToken, move);
+
                     broadcastLoadGame(gameID, authToken);
+
+                    broadcastNotification(gameID, movingUsername + " made a move", session);
                     break;
+
                 case RESIGN:
+                    authToken = baseCommand.getAuthToken();
+                    gameID = baseCommand.getGameID();
+
+                    if (authToken == null || gameID == null || !sessionAuthTokens.containsValue(authToken) || !Objects.equals(authTokenGameIds.get(authToken), gameID)) {
+                        sendError(session, "Error: Not connected to a game");
+                        session.close(4001, "Not connected to a game");
+                        return;
+                    }
+                    String resigningUsername = gameService.getUsernameFromAuth(authToken);
+                    gameService.resign(gameID, authToken);
+                    broadcastNotification(gameID, resigningUsername + " resigned", null);
                     break;
+
                 case LEAVE:
+                    authToken = baseCommand.getAuthToken();
+                    gameID = baseCommand.getGameID();
+
+                    if (authToken == null || gameID == null || !sessionAuthTokens.containsValue(authToken) || !Objects.equals(authTokenGameIds.get(authToken), gameID)) {
+                        sendError(session, "Error: Not connected to a game");
+                        session.close(4001, "Not connected to a game");
+                        return;
+                    }
+                    String leavingUsername = gameService.getUsernameFromAuth(authToken);
+                    gameService.leaveGame(gameID, authToken);
+
+                    sessionAuthTokens.remove(session);
+                    authTokenGameIds.remove(authToken);
                     sessions.remove(authToken);
-                    gameSessions.get(gameID).remove(authToken);
-                    broadcastNotification(gameID, authToken + " left the game.", session);
+
+                    Map<String, Session> currentUsersInGame = gameSessions.get(gameID);
+                    if (currentUsersInGame != null) {
+                        currentUsersInGame.remove(authToken);
+                        if (currentUsersInGame.isEmpty()) {
+                            gameSessions.remove(gameID);
+                        }
+                    }
+
+                    broadcastNotification(gameID, leavingUsername + " left the game", session);
+                    break;
+
+                default:
+                    sendError(session, "Error: Unknown command: " + baseCommand.getCommandType());
+                    break;
             }
-        } catch (Exception e){
-            sendError(session, "Error Processing " + e.getMessage());
+        } catch (DataAccessException e) {
+            sendError(session, "Data Authentication Error: " + e.getMessage());
+            System.err.println("DataAccessException in OnMessage: " + e.getMessage());
+            e.printStackTrace();
+        } catch (InvalidMoveException e) {
+            sendError(session, "Invalid Move: " + e.getMessage());
+            System.err.println("InvalidMoveException in OnMessage: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            sendError(session, "Internal Unexpected Error: " + e.getMessage());
+            System.err.println("Unexpected Exception in OnMessage: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -166,7 +257,7 @@ public class WebSocketServer {
         gameSessions.clear();
         sessionAuthTokens.clear();
         authTokenGameIds.clear();
-        System.out.println("WebSocket server stopped.");
+        System.out.println("WebSocket server stopped");
     }
 
 
