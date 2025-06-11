@@ -25,15 +25,15 @@ public class Server {
     public Server() {
         try {
             this.dataaccess = new MySQLDataAccess();
-            this.webSocketServer = new WebSocketServer();
-        }catch (DataAccessException e){
+            this.userService = new UserService(dataaccess);
+            this.gameService = new GameService(dataaccess);
+            this.sessionService = new SessionService(dataaccess);
+            this.clearService = new ClearService(dataaccess);
+            this.webSocketServer = new WebSocketServer(gameService);
+            this.gson = new Gson();
+        } catch (DataAccessException e) {
             throw new RuntimeException("Unable to connect to database", e);
         }
-        this.userService = new UserService(dataaccess);
-        this.gameService = new GameService(dataaccess);
-        this.sessionService = new SessionService(dataaccess);
-        this.clearService = new ClearService(dataaccess);
-        this.gson = new Gson();
     }
 
     public int run(int desiredPort) {
@@ -47,7 +47,7 @@ public class Server {
         //This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
 
-        webSocketServer.run();
+        webSocketServer.start(8081);
 
         Spark.awaitInitialization();
 

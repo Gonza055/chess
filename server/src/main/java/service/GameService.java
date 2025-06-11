@@ -98,7 +98,7 @@ public class GameService {
         if (game == null) {
             throw new DataAccessException("Invalid game");
         }
-        game.setGameOver(true);
+        //game.setGameOver(true);
         GameData gameData = dataaccess.getGame(gameId);
         dataaccess.updateGame(gameId, new GameData(gameId, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
     }

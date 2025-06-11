@@ -2,6 +2,7 @@ package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -11,32 +12,57 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import service.GameService;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ServerMessageNotification;
+import websocket.messages.ServerMessageError;
+import dataaccess.DataAccessException;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketServer {
-    private final GameService gameService = new GameService();
+    private final GameService gameService;
     private final Map<String, Session> sessions = new HashMap<>();
     private final Map<Integer, Map<String, Session>> gameSessions = new HashMap<>();
+    private final Map<Session, String> sessionAuthTokens = new HashMap<>();
+    private final Map<String, Integer> authTokenGameIds = new HashMap<>();
+
     private final Gson gson = new Gson();
+
+    public WebSocketServer(GameService gameService) {
+        this.gameService = gameService;
+    }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        String authToken = session.getUpgradeRequest().getParameterMap().get("AuthToken").get(0);
-        Integer gameID = Integer.parseInt(session.getUpgradeRequest().getParameterMap().get("GameID").get(0));
-        sessions.put(authToken, session);
-        gameSessions.computeIfAbsent(gameID, k -> new HashMap<>()).put(authToken, session);
-        sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME), authToken, gameID);
-        broadcastNotification(gameID, authToken + " joined game", session);
+        System.out.println("New WebSocket connected: " + session.getRemoteAddress());
     }
+
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        String authToken = getAuthTokenFromSession(session);
-        sessions.remove(authToken);
-        gameSessions.values().forEach(map -> map.remove(authToken));
+        String authToken = sessionAuthTokens.remove(session);
+
+        if (authToken != null) {
+            Integer gameID = authTokenGameIds.remove(authToken);
+
+            if (gameID != null) {
+                Map<String, Session> gameSessionMap = gameSessions.get(gameID);
+                if (gameSessionMap != null) {
+                    gameSessionMap.remove(authToken);
+                    if (gameSessionMap.isEmpty()) {
+                        gameSessions.remove(gameID);
+                    }
+                }
+            }
+            sessions.remove(authToken);
+
+            System.out.println("WebSocket closed for AuthToken: " + authToken + ", Reason: " + reason);
+        } else {
+            System.out.println("WebSocket closed for unknown session, Reason: " + reason);
+        }
     }
 
     @OnWebSocketMessage
@@ -50,7 +76,7 @@ public class WebSocketServer {
                     break;
                 case MAKE_MOVE:
                     ChessMove move = gson.fromJson(message, ChessMove.class);
-                    ChessGame.makeMove(move);
+                    //ChessGame.makeMove(move);
                     broadcastLoadGame(gameID, authToken);
                     break;
                 case RESIGN:
@@ -77,6 +103,9 @@ public class WebSocketServer {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (DataAccessException e) {
+                e.printStackTrace();
+                System.out.println("Error sending message: " + e.getMessage());
             }
         }
     }
@@ -122,6 +151,22 @@ public class WebSocketServer {
 
     private Integer getGameIDFromSession(Session session) {
         return Integer.parseInt(session.getUpgradeRequest().getParameterMap().get("GameID").get(0));
+    }
+
+    public void start(int port) {
+        spark.Spark.port(port);
+        spark.Spark.webSocket("/ws", WebSocketServer.class);
+        spark.Spark.init();
+    }
+
+    public void stop() {
+        spark.Spark.stop();
+        spark.Spark.awaitStop();
+        sessions.clear();
+        gameSessions.clear();
+        sessionAuthTokens.clear();
+        authTokenGameIds.clear();
+        System.out.println("WebSocket server stopped.");
     }
 
 
