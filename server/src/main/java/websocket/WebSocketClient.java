@@ -4,8 +4,11 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import websocket.messages.ServerMessageError;
+import websocket.messages.ServerMessageNotification;
 
 import java.net.URI;
 
@@ -92,35 +95,3 @@ public class WebSocketClient {
     }
 }
 
-public class LoadGameMessage extends ServerMessage {
-    private final ChessGame game;
-    public LoadGameMessage(ChessGame game) {
-        super(ServerMessageType.LOAD_GAME);
-        this.game = game;
-    }
-    public ChessGame getGame() {
-        return game;
-    }
-}
-
-public class ServerMessageError extends ServerMessage {
-    private final String errorMessage;
-    public ServerMessageError(String errorMessage) {
-        super(ServerMessageType.ERROR);
-        this.errorMessage = errorMessage;
-    }
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-}
-
-public class ServerMessageNotification extends ServerMessage {
-    private final String message;
-    public ServerMessageNotification(String message) {
-        super(ServerMessageType.NOTIFICATION);
-        this.message = message;
-    }
-    public String getMessage() {
-        return message;
-    }
-}
