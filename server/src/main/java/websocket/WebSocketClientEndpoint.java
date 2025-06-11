@@ -45,21 +45,8 @@ public class WebSocketClientEndpoint {
         this.session = null;
     }
 
-    public void sendMove(String moveJson) throws IOException {
-        if (session != null && session.isOpen()) {
-            session.getRemote().sendString("{\"commandType\":\"MAKE_MOVE\",\"authToken\":\"" + client.authToken + "\",\"gameID\":" + client.currentGameId + ",\"move\":" + moveJson + "}");
-        }
+    public boolean isOpen() {
+        return session != null && session.isOpen();
     }
 
-    public void sendResign() throws IOException {
-        if (session != null && session.isOpen()) {
-            session.getRemote().sendString("{\"commandType\":\"RESIGN\",\"authToken\":\"" + client.authToken + "\",\"gameID\":" + client.currentGameId + "}");
-        }
-    }
-
-    public void sendLeave() throws IOException {
-        if (session != null && session.isOpen()) {
-            session.getRemote().sendString("{\"commandType\":\"LEAVE\",\"authToken\":\"" + client.authToken + "\",\"gameID\":" + client.currentGameId + "}");
-        }
-    }
 }

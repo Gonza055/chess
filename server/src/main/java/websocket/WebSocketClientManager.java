@@ -62,49 +62,81 @@ public class WebSocketClientManager {
     }
 
     public void disconnect() {
-        try {
-            client.stop();
-        } catch (Exception e) {
-            System.err.println("Error stopping websocket client: " + e.getMessage());
+        if (client != null && client.isRunning()) {
+            try {
+                client.stop();
+            } catch (Exception e) {
+                System.err.println("Error stopping websocket client: " + e.getMessage());
+            } finally {
+                client = null;
+                endpoint = null;
+                isRunning = false;
+                currentAuthToken = null;
+                currentGameID = null;
+            }
         }
-        client = null;
-        endpoint = null;
     }
 
     public void sendCommand(UserGameCommand command) {
-        if (endpoint != null) {
+        if (endpoint != null && endpoint.isOpen()) {
             try {
                 endpoint.sendMessage(gson.toJson(command));
             } catch (Exception e) {
                 if (listener != null) {
-                    listener.onError(e.getMessage());
+                    listener.onError("Failed to send command: " + e.getMessage());
                 }
+            }
+        } else {
+            if (listener != null) {
+                listener.onError("WebSocket connection not open. Cannot send command.");
             }
         }
     }
+
     private void handleMessage(String message) {
         JsonObject json = gson.fromJson(message, JsonObject.class);
-        ServerMessage.ServerMessageType type = ServerMessage.ServerMessageType.valueOf(json.get("serverMessageType").getAsString());
-        switch (type) {
-            case LOAD_GAME -> {
-                LoadGameMessage loadGameMsg = gson.fromJson(message, LoadGameMessage.class);
-                if (listener != null) {
-                    listener.onGameUpdate(loadGameMsg.getGame());
+        if (!json.has("serverMessageType")) {
+            if (listener != null) {
+                listener.onError("Received message without 'serverMessageType': " + message);
+            }
+            return;
+        }
+
+        try {
+            ServerMessage.ServerMessageType type = ServerMessage.ServerMessageType.valueOf(json.get("serverMessageType").getAsString());
+            switch (type) {
+                case LOAD_GAME -> {
+                    LoadGameMessage loadGameMsg = gson.fromJson(message, LoadGameMessage.class);
+                    if (listener != null) {
+                        listener.onGameUpdate(loadGameMsg.getGame());
+                    }
+                }
+                case NOTIFICATION -> {
+                    ServerMessageNotification notificationmsg = gson.fromJson(message, ServerMessageNotification.class);
+                    if (listener != null) {
+                        listener.onNotification(notificationmsg.getMessage());
+                    }
+                }
+                case ERROR -> {
+                    ServerMessageError errorMsg = gson.fromJson(message, ServerMessageError.class);
+                    if (listener != null) {
+                        listener.onError(errorMsg.getErrorMessage());
+                    }
+                }
+                default -> {
+                    if (listener != null) {
+                        listener.onError("Received unknown server message type: " + type + " - " + message);
+                    }
                 }
             }
-            case NOTIFICATION -> {
-                ServerMessageNotification notificationmsg = gson.fromJson(message, ServerMessageNotification.class);
-                if (listener != null) {
-                    listener.onNotification(notificationmsg.getMessage());
-                }
+        } catch (IllegalArgumentException e) {
+            if (listener != null) {
+                listener.onError("Unknown server message type string: " + json.get("serverMessageType").getAsString());
             }
-            case ERROR -> {
-                ServerMessageError errorMsg = gson.fromJson(message, ServerMessageError.class);
-                if (listener != null) {
-                    listener.onError(errorMsg.getErrorMessage());
-                }
+        } catch (Exception e) {
+            if (listener != null) {
+                listener.onError("Error parsing server message: " + e.getMessage() + ". Original message: " + message);
             }
         }
     }
 }
-
