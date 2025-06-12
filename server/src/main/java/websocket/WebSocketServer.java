@@ -183,65 +183,64 @@ public class WebSocketServer {
     }
 
 
-    private void sendMessage(Session session, ServerMessage message, String authToken, Integer gameID) {
-        if (session.isOpen()) {
-            try {
-                if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
-                    String json = gson.toJson(message) + ",\"game\":" + gameService.getGameState(gameID, authToken);
-                    session.getRemote().sendString(json);
-                } else {
-                    session.getRemote().sendString(gson.toJson(message));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (DataAccessException e) {
-                e.printStackTrace();
-                System.out.println("Error sending message: " + e.getMessage());
-            }
+    private void sendMessage(Session session, ServerMessage message) throws IOException {
+        if (session != null && session.isOpen()) {
+            String fullMessageJson = gson.toJson(message);
+            session.getRemote().sendString(fullMessageJson);
         }
     }
 
     private void broadcastNotification(Integer gameID, String message, Session excludedSession) {
-        Map<String, Session> gameSession = this.gameSessions.get(gameID);
-        if (gameSession != null) {
-            for (Session session : gameSession.values()) {
+        Map<String, Session> gameSessionMap = this.gameSessions.get(gameID);
+        if (gameSessionMap != null) {
+            ServerMessageNotification notification = new ServerMessageNotification(message);
+            String notificationJson = gson.toJson(notification);
+
+            for (Session session : gameSessionMap.values()) {
                 if (session != excludedSession && session.isOpen()) {
-                    sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION), null, gameID);
                     try {
-                        session.getRemote().sendString(message);
+                        session.getRemote().sendString(notificationJson);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.err.println("Error sending notification to " + session.getRemoteAddress() + ": " + e.getMessage());
                     }
                 }
             }
-
         }
     }
-    private void broadcastLoadGame(Integer gameID, String authToken) {
-        Map<String, Session> gameSession = this.gameSessions.get(gameID);
-        if (gameSession != null) {
-            for (Session session : gameSession.values()) {
-                sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME), authToken, gameID);
+
+    private void broadcastLoadGame(Integer gameID, String authTokenForServiceCall) throws DataAccessException {
+        Map<String, Session> gameSessionMap = this.gameSessions.get(gameID);
+        if (gameSessionMap != null) {
+            ChessGame gameState = gameService.getGameState(gameID, authTokenForServiceCall);
+
+            LoadGameMessage loadGame = new LoadGameMessage(gameState);
+            String loadGameJson = gson.toJson(loadGame);
+
+            for (Session session : gameSessionMap.values()) {
+                if (session.isOpen()) {
+                    try {
+                        session.getRemote().sendString(loadGameJson);
+                    } catch (IOException e) {
+                        System.err.println("Error sending LOAD_GAME to " + session.getRemoteAddress() + ": " + e.getMessage());
+                    }
+                }
             }
         }
     }
 
     private void sendError(Session session, String errorMessage) {
-        if (session.isOpen()) {
+        if (session != null && session.isOpen()) {
             try {
-                session.getRemote().sendString(errorMessage);
+                ServerMessageError error = new ServerMessageError(errorMessage);
+                session.getRemote().sendString(gson.toJson(error));
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Error sending error message: " + e.getMessage());
             }
         }
     }
 
-    private String getAuthTokenFromSession(Session session) {
-        return session.getUpgradeRequest().getParameterMap().get("AuthToken").get(0);
-    }
-
-    private Integer getGameIDFromSession(Session session) {
-        return Integer.parseInt(session.getUpgradeRequest().getParameterMap().get("GameID").get(0));
+    private Integer getGameIDForAuthToken(String authToken) {
+        return authTokenGameIds.get(authToken);
     }
 
     public void start(int port) {
