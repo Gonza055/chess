@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WebSocketClientManager {
     private final Gson gson = new Gson();
-    private clientListener listener;
+    private ClientListener listener;
     private WebSocketClient client;
     private WebSocketClientEndpoint endpoint;
     private boolean isRunning = false;
@@ -24,7 +24,7 @@ public class WebSocketClientManager {
     private String currentAuthToken;
     private Integer currentGameID;
 
-    public interface clientListener {
+    public interface ClientListener {
         void onGameUpdate(ChessGame game);
         void onNotification(String message);
         void onError(String errorMessage);
@@ -40,7 +40,7 @@ public class WebSocketClientManager {
         }
     }
 
-    public void setListener(clientListener listener) {
+    public void setListener(ClientListener listener) {
         this.listener = listener;
     }
 

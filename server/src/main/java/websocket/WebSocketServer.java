@@ -68,7 +68,7 @@ public class WebSocketServer {
     }
 
     @OnWebSocketMessage
-    public void OnMessage(Session session, String message) throws IOException {
+    public void onMessage(Session session, String message) throws IOException {
         try {
             UserGameCommand baseCommand = gson.fromJson(message, UserGameCommand.class);
 

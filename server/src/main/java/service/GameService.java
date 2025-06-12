@@ -110,80 +110,33 @@ public class GameService {
     }
 
     public ChessGame getGameState(int gameId, String authToken) throws DataAccessException {
-        if (!isValidAuthToken(authToken)) {
-            throw new DataAccessException("Unauthorized");
-        }
-        String username = getUsernameFromAuth(authToken);
-
-        GameData gameData = dataaccess.getGame(gameId);
-        if (gameData == null) {
-            throw new DataAccessException("Bad game ID: Invalid game");
-        }
-
-        ChessGame chessGame = activeGames.get(gameId);
-        if (chessGame == null) {
-            chessGame = gameData.game();
-            if (chessGame == null) {
-                throw new DataAccessException("Game state is corrupted");
-            }
-            activeGames.put(gameId, chessGame);
-        }
-
-        boolean isPlayer = Objects.equals(gameData.whiteUsername(), username) || Objects.equals(gameData.blackUsername(), username);
-        if (!isPlayer && !dataaccess.isObserver(gameId, username)) {
-            throw new DataAccessException("Unauthorized: User is not a player or observer in this game");
-        }
-
-        return chessGame;
+        authorize(authToken);
+        GameData gameData = getGameData(gameId);
+        return ensureGameLoaded(gameId, gameData);
     }
 
     public void makeMove(int gameId, String authToken, ChessMove move) throws DataAccessException, InvalidMoveException {
-        if (!isValidAuthToken(authToken)) {
-            throw new DataAccessException("Unauthorized");
-        }
-        String username = getUsernameFromAuth(authToken);
-
-        GameData gameData = dataaccess.getGame(gameId);
-        if (gameData == null) {
-            throw new DataAccessException("Bad game ID: Invalid game");
-        }
-
-        ChessGame chessGame = activeGames.get(gameId);
-        if (chessGame == null) {
-            chessGame = gameData.game();
-            if (chessGame == null) {
-                throw new DataAccessException("Game state is corrupted");
-            }
-            activeGames.put(gameId, chessGame);
-        }
+        String username = authorize(authToken);
+        GameData gameData = getGameData(gameId);
+        ChessGame chessGame = ensureGameLoaded(gameId, gameData);
 
         if (chessGame.isGameOver()) {
             throw new DataAccessException("Bad Request: Cannot make move: Game is already over");
         }
 
-        ChessGame.TeamColor playerColor = null;
-        if (Objects.equals(gameData.whiteUsername(), username)) {
-            playerColor = ChessGame.TeamColor.WHITE;
-        } else if (Objects.equals(gameData.blackUsername(), username)) {
-            playerColor = ChessGame.TeamColor.BLACK;
-        } else {
-            throw new DataAccessException("Unauthorized: Only players can make moves");
-        }
-
+        ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
         if (chessGame.getTeamTurn() != playerColor) {
             throw new DataAccessException("Bad Request: Not your turn!");
         }
 
         chessGame.makeMove(move);
 
-        GameData updatedGameData = new GameData(
+        dataaccess.updateGame(gameId, new GameData(
                 gameId,
                 gameData.whiteUsername(),
                 gameData.blackUsername(),
                 gameData.gameName(),
-                chessGame
-        );
-        dataaccess.updateGame(gameId, updatedGameData);
+                chessGame));
     }
 
     public void resign(int gameId, String authToken) throws DataAccessException {
@@ -272,6 +225,42 @@ public class GameService {
                 chessGame
         );
         dataaccess.updateGame(gameId, updatedGameData);
+    }
+
+    private String authorize(String authToken) throws DataAccessException {
+        if (!isValidAuthToken(authToken)) {
+            throw new DataAccessException("Unauthorized");
+        }
+        return getUsernameFromAuth(authToken);
+    }
+
+    private GameData getGameData(int gameId) throws DataAccessException {
+        GameData gameData = dataaccess.getGame(gameId);
+        if (gameData == null) {
+            throw new DataAccessException("Bad game ID: Invalid game");
+        }
+        return gameData;
+    }
+
+    private ChessGame ensureGameLoaded(int gameId, GameData gameData) throws DataAccessException {
+        ChessGame game = activeGames.get(gameId);
+        if (game == null) {
+            game = gameData.game();
+            if (game == null) {
+                throw new DataAccessException("Game state is corrupted");
+            }
+            activeGames.put(gameId, game);
+        }
+        return game;
+    }
+
+    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username) throws DataAccessException {
+        if (username.equals(gameData.whiteUsername())) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (username.equals(gameData.blackUsername())) {
+            return ChessGame.TeamColor.BLACK;
+        }
+        throw new DataAccessException("Unauthorized: Only players can make moves");
     }
 
     public void clear() throws DataAccessException {
