@@ -11,6 +11,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MySQLDataAccess implements DataAccess {
@@ -228,5 +229,19 @@ public class MySQLDataAccess implements DataAccess {
         } catch (SQLException e) {
             throw new DataAccessException("failed to delete all games " + e.getMessage());
         }
+    }
+
+    @Override
+    public boolean isObserver(int gameID, String username) throws DataAccessException {
+
+        GameData game = getGame(gameID);
+        if (game == null) {
+            return false;
+        }
+        if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
+            return false;
+        }
+        UserData user = getUser(username);
+        return user != null;
     }
 }

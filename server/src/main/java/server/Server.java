@@ -39,6 +39,8 @@ public class Server {
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
+        Spark.webSocket("/ws", webSocketServer);
+
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
@@ -47,17 +49,7 @@ public class Server {
         //This line initializes the server and can be removed once you have a functioning endpoint
         Spark.init();
 
-        webSocketServer.start(8081);
-
         Spark.awaitInitialization();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                clearService.clear();
-            } catch (Exception e) {
-                System.err.println("Error clearing database: " + e.getMessage());
-            }
-        }));
         return Spark.port();
     }
 
