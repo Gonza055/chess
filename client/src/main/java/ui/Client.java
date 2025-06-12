@@ -18,7 +18,7 @@ public class Client {
     private String authToken;
     private String currentGameId;
     private final Gson gson = new Gson();
-    private WebSocketClient wsClient;
+    //private WebSocketClient wsClient;
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
     }
@@ -26,7 +26,7 @@ public class Client {
     public Client(String serverURL) {
         this.serverURL = serverURL;
         this.serverFacade = new ServerFacade(serverURL);
-        this.wsClient = new WebSocketClient(this);
+        //this.wsClient = new WebSocketClient(this);
         this.isRunning = true;
         this.isLoggedIn = false;
         this.board = new ChessBoard();
@@ -128,7 +128,7 @@ public class Client {
             ChessPosition start = new ChessPosition(Integer.parseInt(positions[0].substring(1)), positions[0].charAt(0) - 'a' + 1);
             ChessPosition end = new ChessPosition(Integer.parseInt(positions[1].substring(1)), positions[1].charAt(0) - 'a' + 1);
             ChessMove move = new ChessMove(start, end, null);
-            wsClient.sendMove(gson.toJson(move));
+            //wsClient.sendMove(gson.toJson(move));
             System.out.println("Move sent: " + moveStr);
         } catch (Exception e) {
             System.out.println("Invalid move: " + e.getMessage());
@@ -141,11 +141,11 @@ public class Client {
             return;
         }
         try {
-            wsClient.sendResign();
+            //wsClient.sendResign();
             System.out.println("Resigned from game");
             currentGameId = null;
             currentPlayerColor = null;
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Resign failed: " + e.getMessage());
         }
     }
@@ -156,11 +156,11 @@ public class Client {
             return;
         }
         try {
-            wsClient.sendLeave();
+            //wsClient.sendLeave();
             System.out.println("Left game");
             currentGameId = null;
             currentPlayerColor = null;
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Leave failed: " + e.getMessage());
         }
     }
@@ -308,7 +308,7 @@ public class Client {
             serverFacade.joinGame(gameId, playerColor);
             currentPlayerColor = playerColor;
             currentGameId = gameId;
-            wsClient.connect("ws://localhost:8081", authToken, gameId);
+            //wsClient.connect("ws://localhost:8081", authToken, gameId);
             System.out.println("Game joined");
             displayBoard();
         } catch (IOException e){
@@ -331,7 +331,7 @@ public class Client {
         String gameId = scanner.nextLine().trim();
         try {
             currentGameId = gameId;
-            wsClient.connect("ws://localhost:8081", authToken, gameId);
+            //wsClient.connect("ws://localhost:8081", authToken, gameId);
             System.out.println("Observing game " + gameId);
             displayBoard();
         } catch (Exception e) {
