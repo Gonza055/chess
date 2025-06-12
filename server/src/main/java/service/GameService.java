@@ -6,6 +6,8 @@ import model.*;
 import service.Results.*;
 import chess.*;
 
+import java.util.Objects;
+
 public class GameService {
 
     private final DataAccess dataaccess;
@@ -15,65 +17,94 @@ public class GameService {
     public GameService(DataAccess dataaccess) {
         this.dataaccess = dataaccess;
     }
-    public GameListResult listGames(String authToken) throws DataAccessException{
+
+    private boolean isValidAuthToken(String authToken) throws DataAccessException {
+        return dataaccess.getAuth(authToken) != null;
+    }
+
+    public String getUsernameFromAuth(String authToken) throws DataAccessException {
+        AuthData authData = dataaccess.getAuth(authToken);
+        if (authData == null) {
+            throw new DataAccessException("Unauthorized: Invalid auth token.");
+        }
+        return authData.username();
+    }
+
+    public GameListResult listGames(String authToken) throws DataAccessException {
         if (!isValidAuthToken(authToken)) {
             throw new DataAccessException("Unauthorized");
         }
         return new GameListResult(dataaccess.getAllGames());
     }
 
-    public CreateGameResult createGame(String authToken, String gameName) throws DataAccessException{
+    public CreateGameResult createGame(String authToken, String gameName) throws DataAccessException {
         if (!isValidAuthToken(authToken)) {
             throw new DataAccessException("Unauthorized");
         }
-        AuthData auth = dataaccess.getAuth(authToken);
-        String username = auth.username();
-        UserData user = dataaccess.getUser(username);
-        if (user == null) {
-            throw new DataAccessException("Invalid user");
-        }
+        String username = getUsernameFromAuth(authToken);
+
         int gameID = dataaccess.generateGameID();
-        if (gameID < 0) {
-            throw new DataAccessException("Unable to generate game ID");
-        }
-        GameData game = new GameData(gameID, null, null, gameName, null);
+        ChessGame newGame = new ChessGame();
+        newGame.getBoard().resetBoard();
+        GameData game = new GameData(gameID, null, null, gameName, newGame);
         dataaccess.createGame(game);
+
+        activeGames.put(gameID, newGame);
+
         return new CreateGameResult(gameID);
     }
 
-    public JoinGameResult joinGame(String authToken, int gameID, String playerColor) throws DataAccessException{
+    public JoinGameResult joinGame(String authToken, int gameID, String playerColor) throws DataAccessException {
         if (!isValidAuthToken(authToken)) {
             throw new DataAccessException("Unauthorized");
         }
-        AuthData auth = dataaccess.getAuth(authToken);
-        String username = auth.username();
-        UserData user = dataaccess.getUser(username);
-        if (user == null) {
-            throw new DataAccessException("Invalid user");
-        }
-        GameData game = dataaccess.getGame(gameID);
-        if (game == null) {
-            throw new DataAccessException("Invalid game");
-        }
-        if ("white".equals(playerColor.toLowerCase()) && game.whiteUsername() != null) {
-            throw new DataAccessException("Player already joined");
-        }
-        if ("black".equals(playerColor.toLowerCase()) && game.blackUsername() != null) {
-            throw new DataAccessException("Player already joined");
+        String username = getUsernameFromAuth(authToken);
+
+        GameData gameData = dataaccess.getGame(gameID);
+        if (gameData == null) {
+            throw new DataAccessException("Bad game ID: Invalid game");
         }
 
-        if (!playerColor.equalsIgnoreCase("white") && !playerColor.equalsIgnoreCase("black")) {
-            throw new DataAccessException("Invalid Color");
+        ChessGame currentChessGame = activeGames.get(gameID);
+        if (currentChessGame == null) {
+            currentChessGame = gameData.game();
+            if (currentChessGame == null) {
+                currentChessGame = new ChessGame();
+                currentChessGame.getBoard().resetBoard();
+            }
+            activeGames.put(gameID, currentChessGame);
         }
 
-        game = new GameData(
-                gameID,
-                "white".equals(playerColor.toLowerCase()) ? username : game.whiteUsername(),
-                "black".equals(playerColor.toLowerCase()) ? username : game.blackUsername(),
-                game.gameName(),
-                game.game());
+        String whiteUsername = gameData.whiteUsername();
+        String blackUsername = gameData.blackUsername();
 
-        dataaccess.updateGame(gameID, game);
+        if ("white".equalsIgnoreCase(playerColor)) {
+            if (whiteUsername != null && !whiteUsername.equals(username)) {
+                throw new DataAccessException("Already taken");
+            }
+            whiteUsername = username;
+        } else if ("black".equalsIgnoreCase(playerColor)) {
+            if (blackUsername != null && !blackUsername.equals(username)) {
+                throw new DataAccessException("Already taken");
+            }
+            blackUsername = username;
+        } else if (!"observer".equalsIgnoreCase(playerColor)) {
+            throw new DataAccessException("Bad Request: Invalid Color");
+        }
+
+        if (Objects.equals(gameData.whiteUsername(), username) && "white".equalsIgnoreCase(playerColor)) {
+        } else if (Objects.equals(gameData.blackUsername(), username) && "black".equalsIgnoreCase(playerColor)) {
+        } else if (dataaccess.isObserver(gameID, username) && "observer".equalsIgnoreCase(playerColor)) {
+        } else {
+            GameData updatedGameData = new GameData(
+                    gameID,
+                    whiteUsername,
+                    blackUsername,
+                    gameData.gameName(),
+                    currentChessGame
+            );
+            dataaccess.updateGame(gameID, updatedGameData);
+        }
 
         return new JoinGameResult(authToken, gameID, playerColor);
     }
@@ -102,9 +133,4 @@ public class GameService {
         GameData gameData = dataaccess.getGame(gameId);
         dataaccess.updateGame(gameId, new GameData(gameId, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
     }
-
-    private boolean isValidAuthToken(String authToken) throws DataAccessException{
-        return dataaccess.getAuth(authToken) != null;
-    }
-
 }

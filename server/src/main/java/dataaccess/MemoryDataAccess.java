@@ -3,9 +3,10 @@ package dataaccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-
+import chess.ChessGame;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -45,9 +46,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public GameData[] getAllGames() throws DataAccessException {
-        //return games.values().toArray(new GameData[0]);
-        GameData[] gameArray = games.values().stream().filter(game -> game.gameID() != null).toArray(GameData[]::new);
-        return gameArray;
+        return games.values().toArray(new GameData[0]);
     }
 
     @Override
@@ -57,16 +56,16 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        if (game.gameID() == null) {
-            throw new DataAccessException("Game ID must be set");
+        if (games.containsKey(game.gameID())) {
+            throw new DataAccessException("Game ID already exists");
         }
         games.put(game.gameID(), game);
     }
 
     @Override
     public void updateGame(int gameID, GameData game) throws DataAccessException {
-        if (game.gameID() == null) {
-            throw new DataAccessException("Game ID must be set");
+        if (!games.containsKey(gameID)) {
+            throw new DataAccessException("Game not found for update");
         }
         games.put(gameID, game);
     }
@@ -94,7 +93,23 @@ public class MemoryDataAccess implements DataAccess {
         games.clear();
     }
 
-    public int generateGameID() {
+    @Override
+    public int generateGameID() throws DataAccessException {
         return gameIdCounter.getAndIncrement();
+    }
+
+    @Override
+    public boolean isObserver(int gameID, String username) throws DataAccessException {
+        GameData game = getGame(gameID);
+        if (game == null) {
+            return false;
+        }
+
+        if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
+            return false;
+        }
+
+        UserData user = getUser(username);
+        return user != null;
     }
 }

@@ -20,4 +20,5 @@ public interface DataAccess {
     void deleteAllGames() throws DataAccessException;
 
     int generateGameID() throws DataAccessException;
+    boolean isObserver(int gameID, String username) throws DataAccessException;
 }
