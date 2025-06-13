@@ -260,9 +260,6 @@ public class WebSocketServer {
         }
     }
 
-//    private Integer getGameIDForAuthToken(String authToken) {
-//        return authTokenGameIds.get(authToken);
-//    }
 
     public void start(int port) {
         spark.Spark.port(port);

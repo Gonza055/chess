@@ -18,6 +18,7 @@ public class Client {
     private String authToken;
     private String currentGameId;
     private final Gson gson = new Gson();
+    private boolean inGame;
     //private WebSocketClient wsClient;
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
@@ -32,6 +33,7 @@ public class Client {
         this.board = new ChessBoard();
         this.board.resetBoard();
         this.currentPlayerColor = null;
+        this.inGame = false;
     }
 
     public void run() {
@@ -49,6 +51,8 @@ public class Client {
             handlePostLoginCommand(command, scanner);
         } else {
             handlePreLoginCommand(command, scanner);
+        } if (inGame) {
+            handleGameCommand(command, scanner);
         }
     }
 
@@ -96,21 +100,21 @@ public class Client {
         }
     }
 
-//    private void handleGameCommand(String command, Scanner scanner) {
-//        switch (command) {
-//            case "move":
-//                handleMove(scanner);
-//                break;
-//            case "resign":
-//                handleResign();
-//                break;
-//            case "leave":
-//                handleLeave();
-//                break;
-//            default:
-//                System.out.println("Invalid command, type Help for a list of commands");
-//        }
-//    }
+    private void handleGameCommand(String command, Scanner scanner) {
+        switch (command) {
+            case "move":
+                handleMove(scanner);
+                break;
+            case "resign":
+                handleResign();
+                break;
+            case "leave":
+                handleLeave();
+                break;
+            default:
+                System.out.println("Invalid command, type Help for a list of commands");
+        }
+    }
 
     private void handleMove(Scanner scanner) {
         if (currentGameId == null) {

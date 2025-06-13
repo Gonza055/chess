@@ -222,7 +222,11 @@ public class GameService {
         return Objects.equals(gameData.whiteUsername(), username) || Objects.equals(gameData.blackUsername(), username);
     }
 
-    private void updateGameState(int gameId, String whiteUsername, String blackUsername, String gameName, ChessGame chessGame) throws DataAccessException {
+    private void updateGameState(int gameId,
+                                 String whiteUsername,
+                                 String blackUsername,
+                                 String gameName,
+                                 ChessGame chessGame) throws DataAccessException {
         GameData updatedGameData = new GameData(gameId, whiteUsername, blackUsername, gameName, chessGame);
         dataaccess.updateGame(gameId, updatedGameData);
     }

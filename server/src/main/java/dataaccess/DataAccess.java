@@ -25,7 +25,9 @@ public interface DataAccess {
 
     default boolean isObserver(int gameID, String username) throws DataAccessException {
         GameData game = getGame(gameID);
-        if (game == null) return false;
+        if (game == null) {
+            return false;
+        }
         if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
             return false;
         }
