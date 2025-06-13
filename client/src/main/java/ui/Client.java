@@ -96,21 +96,21 @@ public class Client {
         }
     }
 
-    private void handleGameCommand(String command, Scanner scanner) {
-        switch (command) {
-            case "move":
-                handleMove(scanner);
-                break;
-            case "resign":
-                handleResign();
-                break;
-            case "leave":
-                handleLeave();
-                break;
-            default:
-                System.out.println("Invalid command, type Help for a list of commands");
-        }
-    }
+//    private void handleGameCommand(String command, Scanner scanner) {
+//        switch (command) {
+//            case "move":
+//                handleMove(scanner);
+//                break;
+//            case "resign":
+//                handleResign();
+//                break;
+//            case "leave":
+//                handleLeave();
+//                break;
+//            default:
+//                System.out.println("Invalid command, type Help for a list of commands");
+//        }
+//    }
 
     private void handleMove(Scanner scanner) {
         if (currentGameId == null) {

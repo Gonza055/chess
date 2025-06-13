@@ -140,27 +140,11 @@ public class GameService {
     }
 
     public void resign(int gameId, String authToken) throws DataAccessException {
-        if (!isValidAuthToken(authToken)) {
-            throw new DataAccessException("Unauthorized");
-        }
-        String username = getUsernameFromAuth(authToken);
+        String username = authorize(authToken);
+        GameData gameData = getGameData(gameId);
+        ChessGame chessGame = ensureGameLoaded(gameId, gameData);
 
-        GameData gameData = dataaccess.getGame(gameId);
-        if (gameData == null) {
-            throw new DataAccessException("Bad game ID: Invalid game");
-        }
-
-        ChessGame chessGame = activeGames.get(gameId);
-        if (chessGame == null) {
-            chessGame = gameData.game();
-            if (chessGame == null) {
-                throw new DataAccessException("Game state is corrupted");
-            }
-            activeGames.put(gameId, chessGame);
-        }
-
-        boolean isPlayer = Objects.equals(gameData.whiteUsername(), username) || Objects.equals(gameData.blackUsername(), username);
-        if (!isPlayer) {
+        if (!isPlayerInGame(gameData, username)) {
             throw new DataAccessException("Forbidden: Only players can resign from a game");
         }
 
@@ -169,36 +153,14 @@ public class GameService {
         }
 
         chessGame.setGameOver(true);
-
-        GameData updatedGameData = new GameData(
-                gameId,
-                gameData.whiteUsername(),
-                gameData.blackUsername(),
-                gameData.gameName(),
-                chessGame
-        );
-        dataaccess.updateGame(gameId, updatedGameData);
+        updateGameState(gameId, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), chessGame);
     }
 
+
     public void leaveGame(int gameId, String authToken) throws DataAccessException {
-        if (!isValidAuthToken(authToken)) {
-            throw new DataAccessException("Unauthorized");
-        }
-        String username = getUsernameFromAuth(authToken);
-
-        GameData gameData = dataaccess.getGame(gameId);
-        if (gameData == null) {
-            throw new DataAccessException("Bad game ID: Invalid game");
-        }
-
-        ChessGame chessGame = activeGames.get(gameId);
-        if (chessGame == null) {
-            chessGame = gameData.game();
-            if (chessGame == null) {
-                throw new DataAccessException("Game state is corrupted");
-            }
-            activeGames.put(gameId, chessGame);
-        }
+        String username = authorize(authToken);
+        GameData gameData = getGameData(gameId);
+        ChessGame chessGame = ensureGameLoaded(gameId, gameData);
 
         String whiteUsername = gameData.whiteUsername();
         String blackUsername = gameData.blackUsername();
@@ -217,14 +179,7 @@ public class GameService {
             throw new DataAccessException("Bad Request: User is not in this game");
         }
 
-        GameData updatedGameData = new GameData(
-                gameId,
-                whiteUsername,
-                blackUsername,
-                gameData.gameName(),
-                chessGame
-        );
-        dataaccess.updateGame(gameId, updatedGameData);
+        updateGameState(gameId, whiteUsername, blackUsername, gameData.gameName(), chessGame);
     }
 
     private String authorize(String authToken) throws DataAccessException {
@@ -262,6 +217,16 @@ public class GameService {
         }
         throw new DataAccessException("Unauthorized: Only players can make moves");
     }
+
+    private boolean isPlayerInGame(GameData gameData, String username) {
+        return Objects.equals(gameData.whiteUsername(), username) || Objects.equals(gameData.blackUsername(), username);
+    }
+
+    private void updateGameState(int gameId, String whiteUsername, String blackUsername, String gameName, ChessGame chessGame) throws DataAccessException {
+        GameData updatedGameData = new GameData(gameId, whiteUsername, blackUsername, gameName, chessGame);
+        dataaccess.updateGame(gameId, updatedGameData);
+    }
+
 
     public void clear() throws DataAccessException {
         dataaccess.clear();

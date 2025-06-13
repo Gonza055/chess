@@ -195,7 +195,9 @@ public class Server {
                 if (e.getMessage().equals("Unauthorized")) {
                     res.status(401);
                     return gson.toJson(new ErrorResponse("Error: Unauthorized"));
-                } else if (e.getMessage().equals("Invalid Game") || e.getMessage().equals("Invalid Color") || e.getMessage().equals("Bad Request: Invalid Color")) {
+                } else if (e.getMessage().equals("Invalid Game") ||
+                        e.getMessage().equals("Invalid Color") ||
+                        e.getMessage().equals("Bad Request: Invalid Color")) {
                     res.status(400);
                     return gson.toJson(new ErrorResponse("Error: Bad request"));
                 } else if (e.getMessage().equals("Player already joined") || e.getMessage().equals("Already taken")) {

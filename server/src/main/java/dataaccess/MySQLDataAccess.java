@@ -230,18 +230,4 @@ public class MySQLDataAccess implements DataAccess {
             throw new DataAccessException("failed to delete all games " + e.getMessage());
         }
     }
-
-    @Override
-    public boolean isObserver(int gameID, String username) throws DataAccessException {
-
-        GameData game = getGame(gameID);
-        if (game == null) {
-            return false;
-        }
-        if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
-            return false;
-        }
-        UserData user = getUser(username);
-        return user != null;
-    }
 }

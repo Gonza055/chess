@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.*;
 
+import java.util.Objects;
+
 public interface DataAccess {
     UserData getUser(String username) throws DataAccessException;
     void createUser(UserData user) throws DataAccessException;
@@ -20,5 +22,14 @@ public interface DataAccess {
     void deleteAllGames() throws DataAccessException;
 
     int generateGameID() throws DataAccessException;
-    boolean isObserver(int gameID, String username) throws DataAccessException;
+
+    default boolean isObserver(int gameID, String username) throws DataAccessException {
+        GameData game = getGame(gameID);
+        if (game == null) return false;
+        if (Objects.equals(game.whiteUsername(), username) || Objects.equals(game.blackUsername(), username)) {
+            return false;
+        }
+        UserData user = getUser(username);
+        return user != null;
+    }
 }
