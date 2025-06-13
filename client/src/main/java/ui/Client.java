@@ -55,37 +55,38 @@ public class Client implements WebSocketClientManager.ClientMessageObserver {
 
     @Override
     public void onGameLoad(LoadGameMessage message) {
-        System.out.println("\n--- ¡Juego Cargado! ---");
+        System.out.println("\n Game loaded!");
         this.currentBoard = message.getGame().getBoard();
         displayBoard(this.currentBoard, this.currentPlayerColor != null ? this.currentPlayerColor : ChessGame.TeamColor.WHITE);
-        System.out.print("[IN GAME] Ingresa un comando (help, redraw, leave, make move, resign): ");
     }
 
     @Override
     public void onNotification(ServerMessageNotification message) {
-        System.out.println("\n" + "--- Notificación del Servidor ---" + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println("\n" + "Server Notification" + EscapeSequences.RESET_TEXT_COLOR);
         System.out.println(message.getMessage());
-        printPrompt();
     }
 
     @Override
     public void onError(ServerMessageError message) {
-        System.out.println("\n" + EscapeSequences.SET_TEXT_COLOR_RED + "--- ¡ERROR del Servidor! ---" + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println("\n" + EscapeSequences.SET_TEXT_COLOR_RED + "Server Error" + EscapeSequences.RESET_TEXT_COLOR);
         System.err.println(EscapeSequences.SET_TEXT_COLOR_RED + "Error: " + message.getErrorMessage() + EscapeSequences.RESET_TEXT_COLOR);
-        printPrompt();
     }
 
-    private void handleCommand(String command, Scanner scanner) {
+    private void handleCommand(String line, Scanner scanner) throws IOException, InvalidMoveException {
+        String[] parts = line.trim().toLowerCase().split(" ", 2);
+        String command = parts[0];
+        String args = parts.length > 1 ? parts[1] : "";
+
         if (inGame) {
-            handleGameCommand(command, scanner);
+            handleGameCommand(command, scanner, args);
         } else if (isLoggedIn) {
-            handlePostLoginCommand(command, scanner);
+            handlePostLoginCommand(command, scanner, args);
         } else {
-            handlePreLoginCommand(command, scanner);
+            handlePreLoginCommand(command, scanner, args);
         }
     }
 
-    private void handlePreLoginCommand(String command, Scanner scanner) {
+    private void handlePreLoginCommand(String command, Scanner scanner, String args) throws IOException {
         switch (command) {
             case "help":
                 displayHelp();
@@ -105,7 +106,7 @@ public class Client implements WebSocketClientManager.ClientMessageObserver {
         }
     }
 
-    private void handlePostLoginCommand(String command, Scanner scanner) {
+    private void handlePostLoginCommand(String command, Scanner scanner, String args) throws IOException {
         switch (command) {
             case "help":
                 displayHelp();
@@ -129,8 +130,10 @@ public class Client implements WebSocketClientManager.ClientMessageObserver {
         }
     }
 
-    private void handleGameCommand(String command, Scanner scanner) {
+    private void handleGameCommand(String command, Scanner scanner, String args) throws IOException, InvalidMoveException {
         switch (command) {
+            case "redraw":
+                displayBoard(currentBoard, currentPlayerColor != null ? currentPlayerColor : ChessGame.TeamColor.WHITE);
             case "move":
                 handleMove(scanner);
                 break;
@@ -200,7 +203,13 @@ public class Client implements WebSocketClientManager.ClientMessageObserver {
     private void displayHelp() {
         System.out.println("Available commands: ");
         System.out.println("Help - Displays this help message");
-        if (isLoggedIn){
+        if (inGame){
+            System.out.println("Redraw - Redraws the current game");
+            System.out.println("Leave - Leaves the current game");
+            System.out.println("Make move - Moves a piece on the current game");
+            System.out.println("Resign - Resigns the current game");
+            System.out.println("Highlight - Highlights the possible moves of a piece on the current game");
+        } else if (isLoggedIn){
             System.out.println("Logout - Logs out of the current account");
             System.out.println("Create Game - Creates a new chess game");
             System.out.println("List Games - Lists existing chess games");
@@ -362,12 +371,26 @@ public class Client implements WebSocketClientManager.ClientMessageObserver {
         System.out.println("Enter game id: ");
         String gameId = scanner.nextLine().trim();
         try {
-            currentGameId = gameId;
-            //wsClient.connect("ws://localhost:8081", authToken, gameId);
-            System.out.println("Observing game " + gameId);
-            displayBoard();
+            Integer gameID = Integer.parseInt(gameId);
+
+            serverFacade.joinGame(gameId, null, authToken);
+
+            this.wsClient = new WebSocketClientManager(serverURL, this);
+
+            ConnectCommand connectCommand = new ConnectCommand(authToken, gameID, null);
+            wsClient.sendCommand(connectCommand);
+
+            this.inGame = true;
+            this.currentGameId = gameID;
+            this.currentPlayerColor = null;
+            System.out.println("Joined game " + gameID + " as observer");
+        } catch (NumberFormatException e) {
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Error: GameId must be a number" + EscapeSequences.RESET_TEXT_COLOR);
+        } catch (IOException e) {
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Server error when observing game (HTTP): " + e.getMessage() + EscapeSequences.RESET_TEXT_COLOR);
         } catch (Exception e) {
-            System.out.println("Observing failed: " + e.getMessage());
+            System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Unable to establish WebSocket connection: " + e.getMessage() + EscapeSequences.RESET_TEXT_COLOR);
+            this.inGame = false;
         }
     }
 
