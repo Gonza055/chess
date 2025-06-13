@@ -7,32 +7,39 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import websocket.WebSocketClientManager;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
+import websocket.commands.ConnectCommand;
+import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessageError;
+import websocket.messages.ServerMessageNotification;
+import websocket.messages.LoadGameMessage;
 
-public class Client {
+public class Client implements WebSocketClientManager.ClientMessageObserver {
+
     private final String serverURL;
     private final ServerFacade serverFacade;
-    private boolean isRunning;
+    private WebSocketClientManager wsClient;
+    public boolean isRunning;
     private boolean isLoggedIn;
-    private ChessBoard board;
-    private String currentPlayerColor;
+    private ChessBoard currentBoard;
+    private ChessGame.TeamColor currentPlayerColor;
     private String authToken;
-    private String currentGameId;
-    private final Gson gson = new Gson();
+    private Integer currentGameId;
     private boolean inGame;
-    //private WebSocketClient wsClient;
-    public void setAuthToken(String authToken) {
-        this.authToken = authToken;
-    }
+
 
     public Client(String serverURL) {
         this.serverURL = serverURL;
         this.serverFacade = new ServerFacade(serverURL);
-        //this.wsClient = new WebSocketClient(this);
         this.isRunning = true;
         this.isLoggedIn = false;
-        this.board = new ChessBoard();
-        this.board.resetBoard();
+        this.currentBoard = new ChessBoard();
+        this.currentBoard.resetBoard();
         this.currentPlayerColor = null;
+        this.authToken = null;
+        this.currentGameId = null;
         this.inGame = false;
     }
 
@@ -46,13 +53,35 @@ public class Client {
         scanner.close();
     }
 
+    @Override
+    public void onGameLoad(LoadGameMessage message) {
+        System.out.println("\n--- ¡Juego Cargado! ---");
+        this.currentBoard = message.getGame().getBoard();
+        displayBoard(this.currentBoard, this.currentPlayerColor != null ? this.currentPlayerColor : ChessGame.TeamColor.WHITE);
+        System.out.print("[IN GAME] Ingresa un comando (help, redraw, leave, make move, resign): ");
+    }
+
+    @Override
+    public void onNotification(ServerMessageNotification message) {
+        System.out.println("\n" + "--- Notificación del Servidor ---" + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println(message.getMessage());
+        printPrompt();
+    }
+
+    @Override
+    public void onError(ServerMessageError message) {
+        System.out.println("\n" + EscapeSequences.SET_TEXT_COLOR_RED + "--- ¡ERROR del Servidor! ---" + EscapeSequences.RESET_TEXT_COLOR);
+        System.err.println(EscapeSequences.SET_TEXT_COLOR_RED + "Error: " + message.getErrorMessage() + EscapeSequences.RESET_TEXT_COLOR);
+        printPrompt();
+    }
+
     private void handleCommand(String command, Scanner scanner) {
-        if (isLoggedIn) {
+        if (inGame) {
+            handleGameCommand(command, scanner);
+        } else if (isLoggedIn) {
             handlePostLoginCommand(command, scanner);
         } else {
             handlePreLoginCommand(command, scanner);
-        } if (inGame) {
-            handleGameCommand(command, scanner);
         }
     }
 
@@ -132,7 +161,6 @@ public class Client {
             ChessPosition start = new ChessPosition(Integer.parseInt(positions[0].substring(1)), positions[0].charAt(0) - 'a' + 1);
             ChessPosition end = new ChessPosition(Integer.parseInt(positions[1].substring(1)), positions[1].charAt(0) - 'a' + 1);
             ChessMove move = new ChessMove(start, end, null);
-            //wsClient.sendMove(gson.toJson(move));
             System.out.println("Move sent: " + moveStr);
         } catch (Exception e) {
             System.out.println("Invalid move: " + e.getMessage());
@@ -352,38 +380,37 @@ public class Client {
         return true;
     }
 
-    private void displayBoard() {
-        System.out.println(EscapeSequences.ERASE_SCREEN);
+    private void displayBoard(ChessBoard board, ChessGame.TeamColor playerPerspective) {
+        System.out.print(EscapeSequences.ERASE_SCREEN);
+        boolean isWhitePerspective = (playerPerspective == ChessGame.TeamColor.WHITE);
+        int startRow = isWhitePerspective ? 8 : 1;
+        int endRow = isWhitePerspective ? 1 : 8;
+        int rowIncrement = isWhitePerspective ? -1 : 1;
+        int startCol = isWhitePerspective ? 1 : 8;
+        int endCol = isWhitePerspective ? 8 : 1;
+        int colIncrement = isWhitePerspective ? 1 : -1;
 
-        boolean isWhitePerspective = "white".equalsIgnoreCase(currentPlayerColor);
+        System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_WHITE + "   ");
+        for (int col = startCol; isWhitePerspective ? col <= endCol : col >= endCol; col += colIncrement) {
+            System.out.print(" " + (char) ('a' + col - 1) + " ");
+        }
+        for (int r = startRow; isWhitePerspective ? r >= endRow : r <= endRow; r += rowIncrement) {
+            System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + r + " ");
+            for (int c = startCol; isWhitePerspective ? c <= endCol : c >= endCol; c += colIncrement) {
+                ChessPosition position = new ChessPosition(r, c);
+                ChessPiece piece = board.getPiece(position);
 
-        int[] rows = isWhitePerspective ? new int[]{8,7,6,5,4,3,2,1} : new int[]{1,2,3,4,5,6,7,8};
-        int[] cols = isWhitePerspective ? new int[]{1,2,3,4,5,6,7,8} : new int[]{8,7,6,5,4,3,2,1};
+                boolean isLightSquare = (r + c) % 2 != 0;
+                String bgColor = isLightSquare ? EscapeSequences.SET_BG_COLOR_LIGHT_GREY : EscapeSequences.SET_BG_COLOR_YELLOW;
 
-        for (int row : rows) {
-            System.out.print(row + " ");
-            for (int col : cols) {
-                ChessPosition pos = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(pos);
-                String pieceSymbol = piece != null ? getPieceSymbol(piece) : EscapeSequences.EMPTY;
-                String bgColor = ((row + col) % 2 == 0) ?
-                        EscapeSequences.SET_BG_COLOR_DARK_GREY : EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
-                System.out.print(bgColor + pieceSymbol + EscapeSequences.RESET_BG_COLOR);
+                System.out.print(bgColor);
+                String pieceSymbol = getPieceSymbol(piece);
+                System.out.print(pieceSymbol);
             }
-            System.out.println();
         }
-
-        System.out.print("  ");
-        for (int col : cols) {
-            char colLabel = (char) ('a' + col - 1);
-            System.out.printf("%s   ", colLabel);
-        }
-        System.out.println();
-
-        if (isLoggedIn && currentPlayerColor != null) {
-            System.out.println("Current player: " + currentPlayerColor);
-        } else {
-            System.out.println("Not in a game or not logged in");
+        System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY + EscapeSequences.SET_TEXT_COLOR_WHITE + "   ");
+        for (int col = startCol; isWhitePerspective ? col <= endCol : col >= endCol; col += colIncrement) {
+            System.out.print(" " + (char) ('a' + col - 1) + " ");
         }
     }
 
