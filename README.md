@@ -1,8 +1,37 @@
-# ♕ BYU CS 240 Chess
+# Multiplayer Chess — Java client/server application
 
-This project demonstrates mastery of proper software design, client/server architecture, networking using HTTP and WebSocket, database persistence, unit testing, serialization, and security.
+BYU CS 240 coursework implementing a terminal chess client, HTTP services, WebSocket gameplay, and MySQL persistence. The repository includes course-provided scaffolding and passoff tests alongside the application implementation; those supplied materials are not presented as original work.
 
-[[Sequence Diagram - Phase 2]](https://sequencediagram.org/index.html?presentationMode=readOnly#initialData=IYYwLg9gTgBAwgGwJYFMB2YBQAHYUxIhK4YwDKKUAbpTngUSWDABLBoAmCtu+hx7ZhWqEUdPo0EwAIsDDAAgiBAoAzqswc5wAEbBVKGBx2ZM6MFACeq3ETQBzGAAYAdADZM9qBACu2GADEaMBUljAASij2SKoWckgQaIEA7gAWSGBiiKikALQAfOSUNFAAXDAA2gAKAPJkACoAujAA9D4GUAA6aADeAETtlMEAtih9pX0wfQA0U7jqydAc45MzUyjDwEgIK1MAvpjCJTAFrOxclOX9g1AjYxNTs33zqotQyw9rfRtbO58HbE43FgpyOonKUCiMUyUAAFJForFKJEAI4+NRgACUh2KohOhVk8iUKnU5XsKDAAFUOrCbndsYTFMo1Kp8UYdKUAGJITgwamURkwHRhOnAUaYHSQ4AAaz5HRgyQyqRgotGMGACClHDCKAAHtCNIziSyTqDcSpyvyoIycSIVKbCkdLjAFJqUMBtfUZegAKK6lTYAiJW3HXKnbLmcoAFicAGZuv1RupgOTxlMfVBvGUVR07uq3R6wvJpeg+gd0BxMEbmeoHUU7ShymgfAgECG8adqyTVKUQFLMlbaR1GQztMba6djKUFBwOHKBdp2-bO2Oaz2++7MgofGBUrDgDvUiOq6vu2ypzO59vdzawcvToCLtmEdDkWoW1hH8C607s9dc2KYwwOUqxPAeu71BAJZoJMIH7CGlB1hGGDlAATE4TgJgMAGjLBUyPFM4GpJB0F4as5acKYXi+P4ATQOw5IwAAMhA0RJAEaQZGImDIWABS-qU1R1E0rQGOoCRoAmqooLMLxvBwBy-gUX6XNJOaUAAjLJ+ivEsMAvJgKlQPx5qNggrE8rCLFsai6KxNid4oAUXYsqU5JUjSNwaaORJrgUU5kD6TE+nA9QwAAVDAnLhDUACy6lQKyADqLA+uEPoJXmAC8UxeX0piOQAPLkLmkjcNpLk5+SOaUVAakgWiZFUOnyTAQ6UI1wBPC8fTYpK7qygAkmgdXIHOcCQhw5hIBqGiGecwLFTVw2jQ1E0oFNGAzQgfoBkGaDzUClAmdQlwxhpWFJqoKb3OmmbQOUK31eNk3TbNZY8cg5hLcUZ1OBdvR9FdN1pn0GZZo9I3PfAr1be9FGVgVpnOaernrXIKDXsqsL9Fadyg3lTyQKRIEaahsaTHsPlMt2-kcoNABygXhGFjP1DU6qHm10mzMT6CYjAABqChMZSPpkG12GaV8ZMUw5pnFaVPZkD4a6HU+P0NqU5k2e+CDMDjfRESRpak+TZby6dUDFUZpToZhgPG1BptTLLH28ZrJR2xhWFOyTrvmwjVHeH4gReCg6DMaxvjMBx6SZJ9OTMGaVuCdIQU+vUPrNC0YmqBJ3R+5H5Sywhxn5LbRdJCX5Pq8CJ1UOCOsx7CfRu5bjcqCjvndm5FJY637cnj3LJ06UgXBaFEVRTF8VETAKVpRlfNJDlbfmxKUpDVDY0wCbB1FSVqOks2rZ15QnvgpSwSHtASAAF4bbtKCBhJZc2wtf0A4mLIgyB4MPT5DfXcd9H7LAOB7XIAlzqXV-qmf+91szXyIqAjaH0KyVUVsfHsRFGStyrmRN2TxpJkTyh3UQ3caauSmtwLch5B7m2puOVQY907BSzjPOKnNdwL1SulGAK8YBrzdpgo+I9SQqzVkZS+Fpm47kiKoD879ci23trA5MqZgJTGsjHGAii1wADMWzuy+hgT2lw1GA2BpokCOidx6NVt2IxOwDhmEop4EOtFJrMWhDAAA4oBVkccuKJ3MGyASFQ-GZxzvYQChdDz7y0aXJSFdP5lCrkk2uRkG5N2hAEpMDC5abwGjAJ6u997n2tlA0ypRT4IG6Mg2+UAH5P39C-fayjbYwKsXA26YNEGWmAakVB4DQlmOqanbpP8NF9IAUgoZIz0GUUcpQ5hfcwCugQPktQsImF+XyAFDOU9IrRS4bEpMoilalB6OclAjItIwFuYyVCAI0kyMbLcpi0JYQVH6Lcwa0g8IPL6LchmgEyK3I0mWaYfzAIArwqhJ4oLwVaJBYBVCZZGgdwviotJ3sHa-LRaMeFSSkWATBbhVFkLoWwuJYCrRiKpjIspSBW5GK9iNDGWAcxZRLGEv+fSkuZLRgUqAqywCUK9gwqJSgElaFhUoFFRC9FmK3GI2oqHAI2AfBQGwNwGGm5DDbJSPHLIpjk6Ol+mUISDQYlxKGYkmu8ZejMsMCBYYlhtkfRSZXBJztq4wFlrMWliqUXus9eC15R1y41Q3BjbZhSvgeq9eQru+QrnuStAAIUsPvRNezaYHI5BPEKYU1KnLnlzRe-DBHCI3v1GUpSd4NT3v6y52DaktjbNIiZndGyNJAc0sBz9X7Bl-B-aNpQplA16aDOZgyUFDrQRA81PKp3-XUddeBd0IZAMXS00ZGDD5XKllAKFlVVlrl7P2FACaQ1KtRcmyNBbR5FtKIzZmrMGbs0eYEtqrqBbC1FuLSWT7cKppQFg8RPYQ1ypgLGKNGte3gjjZkbZCiPyGwFXhBD2KqmqJ9oDbDWiENcrXZY2Dgr4NBw8TRQIlgUCtggMkGAAApCAPJ-GAUCDoBAoBpRcvCVawSVRKQiRaLc+JEF-WZOdf0PVwAGNQDgBAcyUA8IGG4OADaKm1MKrg6Rn1eKMlOuDc8PjSndPQA04xlA2mOBWagPpqjpHsnVRqQAKw42gBN68KazE03ZzIDnVPQFmLGPqW8m2rTnBUntNU6kNIWUujgI6OnjtxZO6d1jZkDL3U0g9Jik5ruy7OhBu6B3DJS0sysKz00dvcgmiLw8qHqDHiW45nD4q3OSnwjKLacqxnbdBtygEbQNtlMamIMAeQxbI8hi0ZSGrbLS2-DLXTCPTK3WKndgCltzluUV76va-oOy2yDVF87ovQ0O0HCbXG1TTecW2SBy1m0cBW200dB8rUTqfOuuTM6ZlkSu8a57R3xnQLjJui75XAFg67TVpGDZL29z8I1W9gFYSxmDYF+zjnUV5Spi15hY9KRVGkAoDhPXyCZz0bZ-HoXYBrzyrwpeM25yDeG615WjiWSVPeaULzPJ0N6ywOtvFFGgfbbIuxnkG1f1qljOqVkkwADU9OtPBccyu4rJ3eWbel7DqYcu0AK9ufBlX+ENd4+10zmjGraJeEU-AbgeB1TYD1YQeIiQTUhN4kJ1OlQ2GZ2zq0YwZdlJ4sqTki0IA3dQE2XgiDqPqG2a3K2K0qhdkk-2VOEPHCK0JQ0HVq5NCKSY1bFjbPL62tvoLxlIvREL31ZG+XjPWzAk56VqwjOhfZ6K7UNztZkjuwC4W42eP7ooAYf1p0yXhuctkUZHoAwMAp94GXfNgSUul+opX-oQwG-Jo1aAA)
+## Engineering evidence
+
+| Area | Where to inspect |
+| --- | --- |
+| Chess rules and game state | `shared/src/main/java/chess/` |
+| HTTP endpoints and request validation | `server/src/main/java/server/Server.java` |
+| Service/data-access separation | `server/src/main/java/service/` and `dataaccess/` |
+| Real-time game messages | `server/src/main/java/websocket/` and `shared/src/main/java/websocket/` |
+| Terminal client and API facade | `client/src/main/java/ui/` |
+| Service and persistence tests | `server/src/test/java/service/` and `dataaccess/` |
+
+## Local setup
+
+Requires JDK 21, Maven, and a local MySQL instance for the server/integration suite. Supply your own ignored `server/src/main/resources/db.properties`; the course example lives in `starter-code/4-database/resources/db.properties`. Never commit real credentials.
+
+```sh
+mvn -pl shared test
+mvn install -DskipTests
+# Separate terminals, after configuring a disposable local database:
+mvn -pl server exec:java
+mvn -pl client exec:java
+```
+
+The server and client use localhost:8080. Run database tests only against a disposable test database: cleanup routines delete test records. The course API includes an unauthenticated database-clear endpoint, so this version is a local educational demo, not an internet-facing service. Test coverage and scaffolding are visible in the repository; no current CI pass or production-security claim is implied.
+
+[Portfolio](https://gonza055.github.io/)
+
+---
+
+## Original course architecture and development notes
 
 ## 10k Architecture Overview
 
